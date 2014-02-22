@@ -2,9 +2,9 @@
 # Set environment variable KERNEL_SRC to point to top of the kernel source
 # And set CCPREFIX to point to compiler location with cross compile prefix
 
-TARGET = snescon
-snescon-objs := snescon_base.o
+TARGET = snesconio
 obj-m += $(TARGET).o
+$(TARGET)-objs := snescon.o snescon_base.o
 
 KERNEL_SRC_LOCATION = /lib/modules/$(KVERSION)/build
 CROSS_COMPILE_SETTINGS =
@@ -15,7 +15,7 @@ CROSS_COMPILE_SETTINGS = ARCH=arm CROSS_COMPILE=${CCPREFIX}
 endif
 
 all:
-	$(MAKE) $(CROSS_COMPILE_SETTINGS) -C $(KERNEL_SRC_LOCATION) M=$(PWD) modules
+	@$(MAKE) $(CROSS_COMPILE_SETTINGS) -C $(KERNEL_SRC_LOCATION) M=$(PWD) modules
 
 clean: 
-	$(MAKE) -C ${KERNEL_SRC_LOCATION} M=$(PWD) clean
+	@$(MAKE) -C ${KERNEL_SRC_LOCATION} M=$(PWD) clean
