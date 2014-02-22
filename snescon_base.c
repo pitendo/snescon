@@ -2,7 +2,7 @@
  * NES, SNES, gamepad driver for Raspberry Pi
  *
  *  Copyright (c) 2014	Christian Isaksson
- *  Copyright (c) 2014	Karl Thoren
+ *  Copyright (c) 2014	Karl Thoren <karl.h.thoren@gmail.com>
  */
 
 /*
