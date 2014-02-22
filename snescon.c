@@ -9,6 +9,8 @@
 #include <linux/ioport.h>
 #include <asm/io.h>
 
+#include "snescon.h"
+
 // GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO(x)
 #define INP_GPIO(g) *(gpio+((g)/10)) &= ~(7<<(((g)%10)*3))	// Set GPIO as input.
 #define OUT_GPIO(g) *(gpio+((g)/10)) |=  (1<<(((g)%10)*3))	// Set GPIO as output.
@@ -29,20 +31,6 @@ const short btn_label[] = { BTN_B, BTN_Y, BTN_SELECT, BTN_START, BTN_A, BTN_X, B
 
 // The order that the buttons of the SNES gamepad are stored in the byte string.
 const unsigned char btn_index[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
-
-/*
- * Structure that contain the configuration.
- *
- * Structuring of the gpio and gamepad arrays:
- * gpio: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>
- * pad: <pad 1, pad 2, pad 3, pad 4, pad 5>
- */
-struct config {
-	unsigned int gpio[6];
-	struct input_dev *pad[5];
-	struct timer_list timer;
-	struct mutex mutex;
-};
 
 /**
  * Read the data pins of all connected devices.
