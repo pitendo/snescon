@@ -36,7 +36,6 @@
 #define DELAY 6
 #define BUFFER_SIZE 34
 
-extern volatile unsigned *gpio;	// I/O access
 
 /*
  * Structure that contain the configuration.

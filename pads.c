@@ -22,33 +22,8 @@
  * MA 02110-1301, USA.
  */
 
-#include <linux/kernel.h>
-#include <linux/delay.h>
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/input.h>
-#include <linux/mutex.h>
-#include <linux/slab.h>
-
-#include <linux/ioport.h>
-#include <asm/io.h>
-
+#include "gpio.h"
 #include "pads.h"
-
-// GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO(x)
-#define INP_GPIO(g) *(gpio+((g)/10)) &= ~(7<<(((g)%10)*3))	// Set GPIO as input.
-#define OUT_GPIO(g) *(gpio+((g)/10)) |=  (1<<(((g)%10)*3))	// Set GPIO as output.
-
-#define GPIO_SET *(gpio + 7)	// Sets bits which are 1 and ignores bits which are 0.
-#define GPIO_CLR *(gpio + 10)	// Clears bits which are 1 and ignores bits which are 0.
-
-#define DELAY 6
-#define BUFFER_SIZE 34
-
-volatile unsigned *gpio;	// I/O access
-
-// The number of bits reported by each supported type of gamepad and accessory.
-const unsigned char bit_length[] = { 8, 24, 12, 24, 32 };
 
 // Buttons found on the SNES gamepad.
 const short btn_label[] = { BTN_B, BTN_Y, BTN_SELECT, BTN_START, BTN_A, BTN_X, BTN_TL, BTN_TR };
@@ -70,31 +45,31 @@ void read_pads(struct config *cfg, unsigned int *data) {
 	latch = cfg->gpio[1];
 	pp = cfg->gpio[5];
     
-	GPIO_SET = clk | latch;
+	gpio_set(clk | latch);
 	udelay(DELAY * 2);
-	GPIO_CLR = latch;
+	gpio_clear(latch);
 	
 	for(i = 0; i < BUFFER_SIZE / 2; i++) {
 		udelay(DELAY);
-		GPIO_CLR = clk;
-		data[i] = ~(*(gpio + 13));
+		gpio_clear(clk);
+		data[i] = gpio_read_all();
 		udelay(DELAY);
-		GPIO_SET = clk;
+		gpio_set(clk);
 	}
 	
 	// Set PP low
-	GPIO_CLR = pp;
+	gpio_clear(pp);
 	
 	for(; i < BUFFER_SIZE; i++) {
 		udelay(DELAY);
-		GPIO_CLR = clk;
-		data[i] = ~(*(gpio + 13));
+		gpio_clear(clk);
+		data[i] = gpio_read_all();
 		udelay(DELAY);
-		GPIO_SET = clk;
+		Ggpio_set(clk);
 	}
 	
 	// Set PP high
-	GPIO_SET = pp;
+	gpio_set(pp);
 }
 
 /**
@@ -115,46 +90,46 @@ int multitap_connected(struct config *cfg) {
 	d1 = cfg->gpio[4];
 	
 	// Set D0 to output
-	INP_GPIO(d0);
-	OUT_GPIO(d0);
+	gpio_input(d0);
+	gpio_output(d0);
 	
 	// Set D0 high
-	GPIO_SET = d0;
-	GPIO_SET = clk;
+	gpio_set(d0);
+	gpio_set(clk);
 	udelay(DELAY);
 	
 	// Read D1 eight times
 	for(i = 0; i < 8; i++) {
 		udelay(DELAY);
-		GPIO_CLR = clk;
+		gpio_clear(clk);
 		
 		// Check if D1 is low
-		if(!(d1 & ~(*(gpio + 13)))) {
+		if(!gpio_read(d1)) {
 			return 0;
 		}
 		udelay(DELAY);
-		GPIO_SET = clk;
+		gpio_set(clk);
 	}
 
 	// Set D0 low
-	GPIO_CLR = d0;
+	gpio_clear(d0);
 	
 	// Read D1 eight times
 	for(i = 0; i < 8; i++) {
 		udelay(DELAY);
-		GPIO_CLR = clk;
+		gpio_clear(clk);
 		
 		// Check if D1 is high
-		if(d1 & ~(*(gpio + 13))) {
+		if(gpio_read(d1)) {
 			byte += 1;
 		}
 		byte <<= 1;
 		udelay(DELAY);
-		GPIO_SET = clk;
+		gpio_set(clk);
 	}
 	
 	// Set D0 to input
-	INP_GPIO(d0);
+	gpio_input(d0);
 	
 	if(byte == 0xFF) {
 		return 0;
@@ -195,7 +170,7 @@ int fourscore_connected(struct config *cfg, unsigned int *data) {
  */
 void update_pads(struct config *cfg) {
 	unsigned int g, data[BUFFER_SIZE];
-	unsigned char i, j, multitap;
+	unsigned char i, j;
 	struct input_dev *dev;
 	
 	read_pads(cfg, data);
@@ -295,7 +270,7 @@ void update_pads(struct config *cfg) {
 		input_sync(dev);
 		
 		// Player 4
-		dev = cfg->pad[2];
+		dev = cfg->pad[3];
 		g = cfg->gpio[3];
 		
 		for (j = 0; j < 4; j++) {
