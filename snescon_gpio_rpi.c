@@ -30,7 +30,7 @@
 #include <linux/mutex.h>
 #include <linux/slab.h>
 
-#include "snescon.h"
+#include "pads.h"
 
 MODULE_AUTHOR("Christian Isaksson, Karl Thoren <karl.h.thoren@gmail.com>");
 MODULE_DESCRIPTION("NES, SNES, gamepad driver for Raspberry Pi");
@@ -42,7 +42,6 @@ MODULE_LICENSE("GPL");
 
 /**
  * Init function for the driver.
- *
  */
 static int __init snescon_init(void) {
 	/* Set up gpio pointer for direct register access */
@@ -57,7 +56,6 @@ static int __init snescon_init(void) {
 
 /**
  * Exit function for the driver.
- *
  */
 static void __exit snescon_exit(void) {
 	iounmap(gpio);
