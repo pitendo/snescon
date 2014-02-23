@@ -69,13 +69,13 @@ void gpio_output(unsigned int g) {
  * @return Status of GPIO
  */
 unsigned char gpio_read(unsigned int g) {
-	return g & ~(*(gpio + 13));
+	return g & *(gpio + 13);
 }
 
 /**
- * Read status of all GPIOs
+ * Read and negate status of all GPIOs
  *
- * @return Status of all GPIOs
+ * @return Negated status of all GPIOs
  */
 unsigned int gpio_read_all() {
 	return ~(*(gpio + 13));;
