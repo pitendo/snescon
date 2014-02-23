@@ -33,21 +33,19 @@
 #include "pads.h"
 #include "gpio.h"
 
-MODULE_AUTHOR("Christian Isaksson, Karl Thoren <karl.h.thoren@gmail.com>");
+MODULE_AUTHOR("Christian Isaksson");
+MODULE_AUTHOR("Karl Thoren <karl.h.thoren@gmail.com>");
 MODULE_DESCRIPTION("NES, SNES, gamepad driver for Raspberry Pi");
 MODULE_LICENSE("GPL");
-
-#define BCM2708_PERI_BASE        0x20000000
-#define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) /* GPIO controller */
-
+MODULE_VERSION("1.0");
 
 /**
  * Init function for the driver.
  */
 static int __init snescon_init(void) {
-	/* Set up gpio pointer for direct register access */
-	if ((gpio = ioremap(GPIO_BASE, 0xB0)) == NULL) {
-		pr_err("io remap failed\n");
+	/* Set up the gpio handler. */
+	if (gpio_init() != 0) {
+		pr_err("Setup of the gpio handler failed\n");
 		return -EBUSY;
 	}
     
@@ -59,7 +57,7 @@ static int __init snescon_init(void) {
  * Exit function for the driver.
  */
 static void __exit snescon_exit(void) {
-	iounmap(gpio);
+	gpio_exit();
 }
 
 module_init(snescon_init);
