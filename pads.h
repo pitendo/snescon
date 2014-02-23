@@ -49,6 +49,7 @@ struct config {
 	struct input_dev *pad[5];
 	struct timer_list timer;
 	struct mutex mutex;
+	unsigned char player_mode;
 };
 
 /**
@@ -81,4 +82,13 @@ int fourscore_connected(struct config *cfg, unsigned int *data);
  * @param cfg The configuration
  */
 void update_pads(struct config *cfg);
+
+/**
+ * Clear status of buttons and axises of virtual devices
+ * 
+ * @param cfg The configuration
+ * @param n_devs Number of devices to have all buttons and axises cleared
+ */
+*/
+void clear_devices(struct config *cfg, unsigned char n_devs);
 
