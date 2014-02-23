@@ -31,6 +31,7 @@
 #include <linux/slab.h>
 
 #include "pads.h"
+#include "gpio.h"
 
 MODULE_AUTHOR("Christian Isaksson, Karl Thoren <karl.h.thoren@gmail.com>");
 MODULE_DESCRIPTION("NES, SNES, gamepad driver for Raspberry Pi");
