@@ -144,10 +144,22 @@ int multitap_connected(struct config *cfg) {
  * @return 1 if a NES Four Score is connected, otherwise 0
  */
 int fourscore_connected(struct config *cfg, unsigned int *data) {
-	return !(cfg->gpio[2] & data[16]) && !(cfg->gpio[2] & data[17]) && !(cfg->gpio[2] & data[18]) && (cfg->gpio[2] & data[19]) && !(cfg->gpio[2] & data[20])
-			&& !(cfg->gpio[2] & data[21]) && !(cfg->gpio[2] & data[22]) && !(cfg->gpio[2] & data[23]) && !(cfg->gpio[3] & data[16])
-			&& !(cfg->gpio[3] & data[17]) && (cfg->gpio[3] & data[18]) && !(cfg->gpio[3] & data[19]) && !(cfg->gpio[3] & data[20]) && !(cfg->gpio[3] & data[21])
-			&& !(cfg->gpio[3] & data[22]) && !(cfg->gpio[3] & data[23]);
+	return !(cfg->gpio[2] & data[16]) &&
+	       !(cfg->gpio[2] & data[17]) &&
+	       !(cfg->gpio[2] & data[18]) &&
+	        (cfg->gpio[2] & data[19]) &&
+	       !(cfg->gpio[2] & data[20]) &&
+	       !(cfg->gpio[2] & data[21]) &&
+	       !(cfg->gpio[2] & data[22]) &&
+	       !(cfg->gpio[2] & data[23]) &&
+	       !(cfg->gpio[3] & data[16]) &&
+	       !(cfg->gpio[3] & data[17]) &&
+	        (cfg->gpio[3] & data[18]) &&
+	       !(cfg->gpio[3] & data[19]) &&
+	       !(cfg->gpio[3] & data[20]) &&
+	       !(cfg->gpio[3] & data[21]) &&
+	       !(cfg->gpio[3] & data[22]) &&
+	       !(cfg->gpio[3] & data[23]);
 }
 
 /**
@@ -226,50 +238,32 @@ void update_pads(struct config *cfg) {
 	} else if (fourscore_connected(cfg, data)) {
 		// NES Four Score
 
-		// Player 1
-		dev = cfg->pad[0];
-		g = cfg->gpio[2];
+		// Player 1 and 2
+		for (i = 0; i < 2; i++) {
+			dev = cfg->pad[i];
+			g = cfg->gpio[i + 2];
 
-		for (j = 0; j < 4; j++) {
-			input_report_key(dev, btn_label[j], g & data[btn_index[j]]);
+			for (j = 0; j < 4; j++) {
+				input_report_key(dev, btn_label[j], g & data[btn_index[j]]);
+			}
+			input_report_abs(dev, ABS_X, !(g & data[6]) - !(g & data[7]));
+			input_report_abs(dev, ABS_Y, !(g & data[4]) - !(g & data[5]));
+			input_sync(dev);
 		}
-		input_report_abs(dev, ABS_X, !(g & data[6]) - !(g & data[7]));
-		input_report_abs(dev, ABS_Y, !(g & data[4]) - !(g & data[5]));
-		input_sync(dev);
 
-		// Player 2
-		dev = cfg->pad[1];
-		g = cfg->gpio[3];
+		// Player 3 and 4
+		for (i = 2; i < 4; i++) {
+			dev = cfg->pad[i];
+			g = cfg->gpio[i];
 
-		for (j = 0; j < 4; j++) {
-			input_report_key(dev, btn_label[j], g & data[btn_index[j]]);
+			for (j = 0; j < 4; j++) {
+				input_report_key(dev, btn_label[j], g & data[btn_index[j] + 8]);
+			}
+			input_report_abs(dev, ABS_X, !(g & data[14]) - !(g & data[15]));
+			input_report_abs(dev, ABS_Y, !(g & data[12]) - !(g & data[13]));
+			input_sync(dev);
 		}
-		input_report_abs(dev, ABS_X, !(g & data[6]) - !(g & data[7]));
-		input_report_abs(dev, ABS_Y, !(g & data[4]) - !(g & data[5]));
-		input_sync(dev);
-
-		// Player 3
-		dev = cfg->pad[2];
-		g = cfg->gpio[2];
-
-		for (j = 0; j < 4; j++) {
-			input_report_key(dev, btn_label[j], g & data[btn_index[j] + 8]);
-		}
-		input_report_abs(dev, ABS_X, !(g & data[14]) - !(g & data[15]));
-		input_report_abs(dev, ABS_Y, !(g & data[12]) - !(g & data[13]));
-		input_sync(dev);
-
-		// Player 4
-		dev = cfg->pad[3];
-		g = cfg->gpio[3];
-
-		for (j = 0; j < 4; j++) {
-			input_report_key(dev, btn_label[j], g & data[btn_index[j] + 8]);
-		}
-		input_report_abs(dev, ABS_X, !(g & data[14]) - !(g & data[15]));
-		input_report_abs(dev, ABS_Y, !(g & data[12]) - !(g & data[13]));
-		input_sync(dev);
-
+		
 		// Check if virtual device 5 should be cleared and if player_mode should be changed to 4 player mode
 		if (cfg->player_mode > 4) {
 			cfg->player_mode = 4;
@@ -282,8 +276,8 @@ void update_pads(struct config *cfg) {
 
 		// Player 1 and 2
 		for (i = 0; i < 2; i++) {
-			dev = cfg->pad[0 + i];
-			g = cfg->gpio[2 + i];
+			dev = cfg->pad[i];
+			g = cfg->gpio[i + 2];
 
 			for (j = 0; j < 8; j++) {
 				input_report_key(dev, btn_label[j], g & data[btn_index[j]]);
@@ -316,7 +310,7 @@ void clear_devices(struct config *cfg, unsigned char n_devs) {
 			input_report_key(dev, btn_label[j], 0);
 		}
 		input_report_abs(dev, ABS_X, 0);
-		input_report_abs(dev, ABS_X, 0);
+		input_report_abs(dev, ABS_Y, 0);
 		input_sync(dev);
 	}
 }
