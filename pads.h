@@ -89,6 +89,5 @@ void update_pads(struct config *cfg);
  * @param cfg The configuration
  * @param n_devs Number of devices to have all buttons and axises cleared
  */
-*/
 void clear_devices(struct config *cfg, unsigned char n_devs);
 

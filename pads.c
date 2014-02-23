@@ -65,7 +65,7 @@ void read_pads(struct config *cfg, unsigned int *data) {
 		gpio_clear(clk);
 		data[i] = gpio_read_all();
 		udelay(DELAY);
-		Ggpio_set(clk);
+		gpio_set(clk);
 	}
 
 	// Set PP high
@@ -301,10 +301,10 @@ void update_pads(struct config *cfg) {
  * @param cfg The configuration
  * @param n_devs Number of devices to have all buttons and axises cleared
  */
-*/
 void clear_devices(struct config *cfg, unsigned char n_devs) {
-	int i;
-	for(i = 0; i < n_pads; i++) {
+	struct input_dev *dev;
+	int i, j;
+	for(i = 0; i < n_devs; i++) {
 		dev = cfg->pad[5 - i];
 		for (j = 0; j < 8; j++) {
 			input_report_key(dev, btn_label[j], 0);

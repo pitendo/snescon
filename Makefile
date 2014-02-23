@@ -4,7 +4,7 @@
 
 TARGET = snesconio
 obj-m += $(TARGET).o
-$(TARGET)-objs := snescon.o snescon_base.o
+$(TARGET)-objs := gpio.o pads.o snescon.o
 
 KERNEL_SRC_LOCATION = /lib/modules/$(KVERSION)/build
 CROSS_COMPILE_SETTINGS =
