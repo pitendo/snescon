@@ -33,11 +33,33 @@
 #include "pads.h"
 #include "gpio.h"
 
+#define REFRESH_TIME	HZ/100
+
 MODULE_AUTHOR("Christian Isaksson");
 MODULE_AUTHOR("Karl Thoren <karl.h.thoren@gmail.com>");
 MODULE_DESCRIPTION("NES, SNES, gamepad driver for Raspberry Pi");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("1.0");
+
+/*
+ * Structure that contain pad configuration, timer and mutex.
+ */
+struct snescon_config {
+	struct pads_config pads_cfg;
+	struct timer_list timer;
+	struct mutex mutex;
+};
+
+/**
+ * Timer that read and update all pads.
+ * 
+ * @param ptr The pointer to the snescon_config structure
+ */
+static void snescon_timer(unsigned long ptr) {
+	struct snescon_config cfg = (void *) ptr;
+	pads_update(cfg->pads_cfg);
+	mod_timer(&cfg->timer, jiffies + REFRESH_TIME);
+}
 
 /**
  * Init function for the driver.
