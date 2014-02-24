@@ -52,42 +52,5 @@ struct pads_config {
 	unsigned char player_mode;
 };
 
-/**
- * Read the data pins of all connected devices.
- *
- * @param cfg The pad configuration
- * @param data Array to store the read data in
- */
-void read_pads(struct config *cfg, unsigned int *data);
-
-/**
- * Check if a SNES Multitap is connected.
- *
- * @param cfg The pad configuration
- * @return 1 if a SNES Multitap is connected, otherwise 0
- */
-unsigned char multitap_connected(struct config *cfg);
-
-/**
- * Check if a NES Four Score is connected.
- *
- * @param cfg The pad configuration
- * @return 1 if a NES Four Score is connected, otherwise 0
- */
-unsigned char fourscore_connected(struct config *cfg, unsigned int *data);
-
-/**
- * Update the status of all connected devices.
- *
- * @param cfg The pad configuration
- */
-void update_pads(struct config *cfg);
-
-/**
- * Clear status of buttons and axises of virtual devices
- * 
- * @param cfg The pad configuration
- * @param n_devs Number of devices to have all buttons and axises cleared
- */
-void clear_devices(struct config *cfg, unsigned char n_devs);
+void pads_update(struct config *cfg);
 
