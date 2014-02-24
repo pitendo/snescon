@@ -47,8 +47,6 @@
 struct pads_config {
 	unsigned int gpio[6];
 	struct input_dev *pad[5];
-	struct timer_list timer;
-	struct mutex mutex;
 	unsigned char player_mode;
 };
 
