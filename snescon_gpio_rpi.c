@@ -39,7 +39,7 @@ MODULE_AUTHOR("Christian Isaksson");
 MODULE_AUTHOR("Karl Thoren <karl.h.thoren@gmail.com>");
 MODULE_DESCRIPTION("NES, SNES, gamepad driver for Raspberry Pi");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.0");
+MODULE_VERSION("1.0.0");
 
 /*
  * Structure that contain pad configuration, timer and mutex.
