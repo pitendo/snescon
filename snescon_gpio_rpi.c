@@ -63,8 +63,12 @@ static void snescon_timer(unsigned long ptr) {
 	mod_timer(&cfg->timer, jiffies + REFRESH_TIME);
 }
 
-struct snescon_config snescon_config = {
-	.pads_cfg.gpio = {2, 3, 4, 7, 10, 11}, // Default values.
+/**
+ * Module global parameter variable.
+ *
+ */
+static struct snescon_config snescon_config = {
+	.pads_cfg.gpio = {2, 3, 4, 7, 10, 11}, // Default values for the GPIOs.
 	.pads_cfg.gpio_cnt = NUMBER_OF_GPIOS
 };
 
