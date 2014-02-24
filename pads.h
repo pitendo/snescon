@@ -44,7 +44,7 @@
  * gpio: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>
  * pad: <pad 1, pad 2, pad 3, pad 4, pad 5>
  */
-struct config {
+struct pads_config {
 	unsigned int gpio[6];
 	struct input_dev *pad[5];
 	struct timer_list timer;
@@ -55,7 +55,7 @@ struct config {
 /**
  * Read the data pins of all connected devices.
  *
- * @param cfg The configuration
+ * @param cfg The pad configuration
  * @param data Array to store the read data in
  */
 void read_pads(struct config *cfg, unsigned int *data);
@@ -63,30 +63,30 @@ void read_pads(struct config *cfg, unsigned int *data);
 /**
  * Check if a SNES Multitap is connected.
  *
- * @param cfg The configuration
+ * @param cfg The pad configuration
  * @return 1 if a SNES Multitap is connected, otherwise 0
  */
-int multitap_connected(struct config *cfg);
+unsigned char multitap_connected(struct config *cfg);
 
 /**
  * Check if a NES Four Score is connected.
  *
- * @param cfg The configuration
+ * @param cfg The pad configuration
  * @return 1 if a NES Four Score is connected, otherwise 0
  */
-int fourscore_connected(struct config *cfg, unsigned int *data);
+unsigned char fourscore_connected(struct config *cfg, unsigned int *data);
 
 /**
  * Update the status of all connected devices.
  *
- * @param cfg The configuration
+ * @param cfg The pad configuration
  */
 void update_pads(struct config *cfg);
 
 /**
  * Clear status of buttons and axises of virtual devices
  * 
- * @param cfg The configuration
+ * @param cfg The pad configuration
  * @param n_devs Number of devices to have all buttons and axises cleared
  */
 void clear_devices(struct config *cfg, unsigned char n_devs);
