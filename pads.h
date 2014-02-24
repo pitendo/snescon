@@ -47,7 +47,7 @@
  * pad: <pad 1, pad 2, pad 3, pad 4, pad 5>
  *
  */
-struct config {
+struct pads_config {
 	unsigned int gpio[NUMBER_OF_GPIOS];
 	unsigned int gpio_cnt; // Counter used in communication with userspace. Should be set to NUMBER_OF_GPIOS if parameter gpio is valid.
 	struct input_dev *pad[NUMBER_OF_INPUT_DEVICES];
@@ -55,5 +55,5 @@ struct config {
 	int driver_usage_cnt;
 };
 
-void pads_update(struct config *cfg);
+void pads_update(struct pads_config *cfg);
 

@@ -37,7 +37,7 @@ const unsigned char btn_index[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
  * @param cfg The pad configuration
  * @param data Array to store the read data in
  */
-void pads_read(struct config *cfg, unsigned int *data) {
+void pads_read(struct pads_config *cfg, unsigned int *data) {
 	int i;
 	unsigned int clk, latch, pp;
 

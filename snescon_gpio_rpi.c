@@ -58,20 +58,20 @@ struct snescon_config {
  * @param ptr The pointer to the snescon_config structure
  */
 static void snescon_timer(unsigned long ptr) {
-	struct snescon_config cfg = (void *) ptr;
-	pads_update(cfg->pads_cfg);
+	struct snescon_config* cfg = (void *) ptr;
+	pads_update(&(cfg->pads_cfg));
 	mod_timer(&cfg->timer, jiffies + REFRESH_TIME);
 }
 
-struct config snescon_config = {
-	.gpio = {2, 3, 4, 7, 10, 11}, // Default values.
-	.gpio_cnt = NUMBER_OF_GPIOS
+struct snescon_config snescon_config = {
+	.pads_cfg.gpio = {2, 3, 4, 7, 10, 11}, // Default values.
+	.pads_cfg.gpio_cnt = NUMBER_OF_GPIOS
 };
 
 /**
  * @brief Definition of module parameter gpio. This parameter are readable from the sysfs.
  */
-module_param_array_named(gpio, snescon_config.gpio, uint, &(snescon_config.gpio_cnt), S_IRUGO);
+module_param_array_named(gpio, snescon_config.pads_cfg.gpio, uint, &(snescon_config.pads_cfg.gpio_cnt), S_IRUGO);
 MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as following. <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
 
 /**
@@ -80,8 +80,8 @@ MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as following. <
 static int __init snescon_init(void) {
 
 	/* Check if the used supplied a GPIO setting. All GPIOs must be set for the configuration to be prevalid. */
-	if (snescon_config.gpio_cnt != NUMBER_OF_GPIOS) {
-		pr_err("Number of GPIO pins in gpio configuration is not correct. Expected %i, actual %i\n", NUMBER_OF_GPIOS, snescon_config.gpio_cnt);
+	if (snescon_config.pads_cfg.gpio_cnt != NUMBER_OF_GPIOS) {
+		pr_err("Number of GPIO pins in gpio configuration is not correct. Expected %i, actual %i\n", NUMBER_OF_GPIOS, snescon_config.pads_cfg.gpio_cnt);
 		return -EINVAL;
 	}
 
