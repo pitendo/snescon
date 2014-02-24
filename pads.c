@@ -315,3 +315,10 @@ void pads_update(struct pads_config *cfg) {
 	}
 }
 
+int __init pads_setup(struct pads_config *cfg) {
+	return 0;
+}
+
+void __exit pads_remove(struct pads_config *cfg) {
+}
+

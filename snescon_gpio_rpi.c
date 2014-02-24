@@ -50,6 +50,7 @@ struct snescon_config {
 	struct pads_config pads_cfg;
 	struct timer_list timer;
 	struct mutex mutex;
+	int driver_usage_cnt;
 };
 
 /**
@@ -78,21 +79,66 @@ static struct snescon_config snescon_config = {
 module_param_array_named(gpio, snescon_config.pads_cfg.gpio, uint, &(snescon_config.pads_cfg.gpio_cnt), S_IRUGO);
 MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as following. <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
 
+static int snescon_open(struct input_dev *dev) {
+	struct snescon_config* cfg = input_get_drvdata(dev);
+	int status;
+    
+	status = mutex_lock_interruptible(&cfg->mutex);
+	if (status) {
+		return status;
+	}
+    
+	cfg->driver_usage_cnt++;
+	if (cfg->driver_usage_cnt > 0) {
+		mod_timer(&cfg->timer, jiffies + REFRESH_TIME);
+	}
+    
+	mutex_unlock(&cfg->mutex);
+	return 0;
+}
+
+static void snescon_close(struct input_dev *dev) {
+	struct snescon_config* cfg = input_get_drvdata(dev);
+    
+	mutex_lock(&cfg->mutex);
+	cfg->driver_usage_cnt--;
+	if (cfg->driver_usage_cnt <= 0) {
+		del_timer_sync(&cfg->timer);
+	}
+	mutex_unlock(&cfg->mutex);
+}
+
+
 /**
  * Init function for the driver.
  */
 static int __init snescon_init(void) {
-
-	/* Check if the used supplied a GPIO setting. All GPIOs must be set for the configuration to be prevalid. */
+	/* Check if the supplied GPIO setting are useful. All GPIOs must be set for the configuration to be prevalid. */
 	if (snescon_config.pads_cfg.gpio_cnt != NUMBER_OF_GPIOS) {
 		pr_err("Number of GPIO pins in gpio configuration is not correct. Expected %i, actual %i\n", NUMBER_OF_GPIOS, snescon_config.pads_cfg.gpio_cnt);
 		return -EINVAL;
 	}
+	/** @todo Add check so the provided GPIO setting are valid */
 
 	/* Set up the gpio handler. */	
 	if (gpio_init() != 0) {
 		pr_err("Setup of the gpio handler failed\n");
 		return -EBUSY;
+	}
+
+	/* Initiate the mutex and the timer */
+        mutex_init(&snescon_config.mutex);
+        setup_timer(&snescon_config.timer, snescon_timer, (long) &snescon_config);
+
+	if (pads_setup(&snescon_config.pads_cfg)) {
+		pr_err("Setup of input_device failed!\n");
+
+		/* Cleanup allocated resourses */
+		del_timer(&snescon_config.timer);
+		mutex_destroy(&snescon_config.mutex);
+		gpio_exit();
+
+		return -ENODEV;
 	}
 
 	pr_info("Loaded driver\n");
@@ -105,7 +151,12 @@ static int __init snescon_init(void) {
  * Exit function for the driver.
  */
 static void __exit snescon_exit(void) {
+	del_timer(&snescon_config.timer);
+	pads_remove(&snescon_config.pads_cfg);
+	mutex_destroy(&snescon_config.mutex);
 	gpio_exit();
+
+	pr_info("driver exit\n");
 }
 
 module_init(snescon_init);

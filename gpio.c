@@ -112,6 +112,6 @@ int __init gpio_init(void) {
 /**
  * Exit function for the gpio part of the driver.
  */
-void __exit gpio_exit(void) {
+void gpio_exit(void) {
 	iounmap(gpio);
 }

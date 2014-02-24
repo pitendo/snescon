@@ -33,4 +33,4 @@ void gpio_output(unsigned int);
 unsigned char gpio_read(unsigned int);
 unsigned int gpio_read_all(void);
 extern int gpio_init(void) __init;
-extern void gpio_exit(void) __exit;
+extern void gpio_exit(void);

@@ -22,6 +22,9 @@
  * MA 02110-1301, USA.
  */
 
+#ifndef _PADS_H_
+#define _PADS_H_
+
 #include <linux/kernel.h>
 #include <linux/delay.h>
 #include <linux/module.h>
@@ -52,8 +55,10 @@ struct pads_config {
 	unsigned int gpio_cnt; // Counter used in communication with userspace. Should be set to NUMBER_OF_GPIOS if parameter gpio is valid.
 	struct input_dev *pad[NUMBER_OF_INPUT_DEVICES];
 	unsigned char player_mode;
-	int driver_usage_cnt;
 };
 
-void pads_update(struct pads_config *cfg);
+extern void pads_update(struct pads_config *cfg);
+extern int  pads_setup(struct pads_config *cfg) __init;
+extern void pads_remove(struct pads_config *cfg) __exit;
 
+#endif /* _PADS_H_ */
