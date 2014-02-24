@@ -51,48 +51,9 @@ struct config {
 	unsigned int gpio[NUMBER_OF_GPIOS];
 	unsigned int gpio_cnt; // Counter used in communication with userspace. Should be set to NUMBER_OF_GPIOS if parameter gpio is valid.
 	struct input_dev *pad[NUMBER_OF_INPUT_DEVICES];
-	struct timer_list timer;
-	struct mutex mutex;
 	unsigned char player_mode;
 	int driver_usage_cnt;
 };
 
-/**
- * Read the data pins of all connected devices.
- *
- * @param cfg The configuration
- * @param data Array to store the read data in
- */
-void read_pads(struct config *cfg, unsigned int *data);
-
-/**
- * Check if a SNES Multitap is connected.
- *
- * @param cfg The configuration
- * @return 1 if a SNES Multitap is connected, otherwise 0
- */
-int multitap_connected(struct config *cfg);
-
-/**
- * Check if a NES Four Score is connected.
- *
- * @param cfg The configuration
- * @return 1 if a NES Four Score is connected, otherwise 0
- */
-int fourscore_connected(struct config *cfg, unsigned int *data);
-
-/**
- * Update the status of all connected devices.
- *
- * @param cfg The configuration
- */
-void update_pads(struct config *cfg);
-
-/**
- * Clear status of buttons and axises of virtual devices
- * 
- * @param cfg The configuration
- * @param n_devs Number of devices to have all buttons and axises cleared
- */
-void clear_devices(struct config *cfg, unsigned char n_devs);
+void pads_update(struct config *cfg);
 

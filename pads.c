@@ -34,10 +34,10 @@ const unsigned char btn_index[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
 /**
  * Read the data pins of all connected devices.
  *
- * @param cfg The configuration
+ * @param cfg The pad configuration
  * @param data Array to store the read data in
  */
-void read_pads(struct config *cfg, unsigned int *data) {
+void pads_read(struct config *cfg, unsigned int *data) {
 	int i;
 	unsigned int clk, latch, pp;
 
@@ -75,10 +75,10 @@ void read_pads(struct config *cfg, unsigned int *data) {
 /**
  * Check if a SNES Multitap is connected.
  *
- * @param cfg The configuration
+ * @param cfg The pad configuration
  * @return 1 if a SNES Multitap is connected, otherwise 0
  */
-int multitap_connected(struct config *cfg) {
+unsigned char multitap_connected(struct pads_config *cfg) {
 	int i;
 	unsigned char byte = 0;
 	unsigned int clk, latch, d0, d1;
@@ -140,10 +140,10 @@ int multitap_connected(struct config *cfg) {
 /**
  * Check if a NES Four Score is connected.
  *
- * @param cfg The configuration
+ * @param cfg The pad configuration
  * @return 1 if a NES Four Score is connected, otherwise 0
  */
-int fourscore_connected(struct config *cfg, unsigned int *data) {
+unsigned char fourscore_connected(struct pads_config *cfg, unsigned int *data) {
 	return !(cfg->gpio[2] & data[16]) &&
 	       !(cfg->gpio[2] & data[17]) &&
 	       !(cfg->gpio[2] & data[18]) &&
@@ -163,16 +163,36 @@ int fourscore_connected(struct config *cfg, unsigned int *data) {
 }
 
 /**
+ * Clear status of buttons and axises of virtual devices.
+ * 
+ * @param cfg The pad configuration
+ * @param n_devs Number of devices to have all buttons and axises cleared
+ */
+void clear_devices(struct pads_config *cfg, unsigned char n_devs) {
+	struct input_dev *dev;
+	int i, j;
+	for(i = 0; i < n_devs; i++) {
+		dev = cfg->pad[5 - i];
+		for (j = 0; j < 8; j++) {
+			input_report_key(dev, btn_label[j], 0);
+		}
+		input_report_abs(dev, ABS_X, 0);
+		input_report_abs(dev, ABS_Y, 0);
+		input_sync(dev);
+	}
+}
+
+/**
  * Update the status of all connected devices.
  *
- * @param cfg The configuration
+ * @param cfg The pad configuration
  */
-void update_pads(struct config *cfg) {
+void pads_update(struct pads_config *cfg) {
 	unsigned int g, data[BUFFER_SIZE];
 	unsigned char i, j;
 	struct input_dev *dev;
 
-	read_pads(cfg, data);
+	pads_read(cfg, data);
 
 	if (multitap_connected(cfg)) {
 		// SNES Multitap
@@ -292,26 +312,6 @@ void update_pads(struct config *cfg) {
 			cfg->player_mode = 2;
 			clear_devices(cfg, 3);
 		}
-	}
-}
-
-/**
- * Clear status of buttons and axises of virtual devices.
- * 
- * @param cfg The configuration
- * @param n_devs Number of devices to have all buttons and axises cleared
- */
-void clear_devices(struct config *cfg, unsigned char n_devs) {
-	struct input_dev *dev;
-	int i, j;
-	for(i = 0; i < n_devs; i++) {
-		dev = cfg->pad[5 - i];
-		for (j = 0; j < 8; j++) {
-			input_report_key(dev, btn_label[j], 0);
-		}
-		input_report_abs(dev, ABS_X, 0);
-		input_report_abs(dev, ABS_Y, 0);
-		input_sync(dev);
 	}
 }
 
