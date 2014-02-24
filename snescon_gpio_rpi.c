@@ -65,21 +65,10 @@ static void snescon_timer(unsigned long ptr) {
 }
 
 /**
- * Module global parameter variable.
- *
+ * @brief Open function for the driver.
+ * Enables the 
  */
-static struct snescon_config snescon_config = {
-	.pads_cfg.gpio = {2, 3, 4, 7, 10, 11}, // Default values for the GPIOs.
-	.pads_cfg.gpio_cnt = NUMBER_OF_GPIOS
-};
-
-/**
- * @brief Definition of module parameter gpio. This parameter are readable from the sysfs.
- */
-module_param_array_named(gpio, snescon_config.pads_cfg.gpio, uint, &(snescon_config.pads_cfg.gpio_cnt), S_IRUGO);
-MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as following. <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
-
-static int snescon_open(struct input_dev *dev) {
+static int snescon_open(struct input_dev* dev) {
 	struct snescon_config* cfg = input_get_drvdata(dev);
 	int status;
     
@@ -90,6 +79,7 @@ static int snescon_open(struct input_dev *dev) {
     
 	cfg->driver_usage_cnt++;
 	if (cfg->driver_usage_cnt > 0) {
+		/* Atleast one device open. Start the timer or reset the timeout. */
 		mod_timer(&cfg->timer, jiffies + REFRESH_TIME);
 	}
     
@@ -97,16 +87,39 @@ static int snescon_open(struct input_dev *dev) {
 	return 0;
 }
 
-static void snescon_close(struct input_dev *dev) {
+/**
+ * @brief Close function for the driver.
+ * Disables the timer if the last device are closed.
+ */
+static void snescon_close(struct input_dev* dev) {
 	struct snescon_config* cfg = input_get_drvdata(dev);
     
 	mutex_lock(&cfg->mutex);
 	cfg->driver_usage_cnt--;
 	if (cfg->driver_usage_cnt <= 0) {
+		/* Last device closed. Disable the timer. */
 		del_timer_sync(&cfg->timer);
 	}
 	mutex_unlock(&cfg->mutex);
 }
+
+/**
+ * Module global parameter variable.
+ *
+ */
+static struct snescon_config snescon_config = {
+	.pads_cfg.gpio = {2, 3, 4, 7, 10, 11}, // Default values for the GPIOs.
+	.pads_cfg.gpio_cnt = NUMBER_OF_GPIOS,
+	.pads_cfg.device_name = "SNES pad",
+	.pads_cfg.open = &snescon_open,
+	.pads_cfg.close = &snescon_close,
+};
+
+/**
+ * @brief Definition of module parameter gpio. This parameter are readable from the sysfs.
+ */
+module_param_array_named(gpio, snescon_config.pads_cfg.gpio, uint, &(snescon_config.pads_cfg.gpio_cnt), S_IRUGO);
+MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as following. <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
 
 
 /**
@@ -130,7 +143,7 @@ static int __init snescon_init(void) {
         mutex_init(&snescon_config.mutex);
         setup_timer(&snescon_config.timer, snescon_timer, (long) &snescon_config);
 
-	if (pads_setup(&snescon_config.pads_cfg)) {
+	if (pads_setup(&snescon_config.pads_cfg) != 0) {
 		pr_err("Setup of input_device failed!\n");
 
 		/* Cleanup allocated resourses */

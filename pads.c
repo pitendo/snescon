@@ -316,9 +316,80 @@ void pads_update(struct pads_config *cfg) {
 }
 
 int __init pads_setup(struct pads_config *cfg) {
-	return 0;
+	int i, j;
+	int status = 0;
+   
+	for (i = 0; (i < NUMBER_OF_INPUT_DEVICES) && (0 == status); ++i) {
+		cfg->pad[i] = input_allocate_device();
+		if (!cfg->pad[i]) {
+			pr_err("Not enough memory for input device!\n");
+			status = -ENOMEM;
+		}
+
+
+		if (0 == status) {
+			/* Create the memory for the name */
+			char *phys = kzalloc(BUFFER_SIZE, GFP_KERNEL);
+			if (!phys) {
+				pr_err("Not enough memory for input device phys!\n");
+				status = -ENOMEM;
+			} else {
+				/* Create the device path name in userspace. */
+				snprintf(phys, BUFFER_SIZE, "input%d", i);
+				cfg->pad[i]->phys = phys;
+			}
+
+		}
+
+		if (0 == status) {
+			/* Configure the main part of the input device */
+
+			cfg->pad[i]->name = cfg->device_name;
+			cfg->pad[i]->id.bustype = BUS_PARPORT;
+			cfg->pad[i]->id.vendor = 0x0001;
+			cfg->pad[i]->id.product = 1;
+			cfg->pad[i]->id.version = 0x0100;
+    
+			input_set_drvdata(cfg->pad[i], cfg);
+    
+			cfg->pad[i]->open = cfg->open;
+			cfg->pad[i]->close = cfg->close;
+			cfg->pad[i]->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
+        
+			for (j = 0; j < 2; j++) {
+				input_set_abs_params(cfg->pad[i], ABS_X + j, -1, 1, 0, 0);
+			}
+            		
+			for (j = 0; j < 8; j++) {
+				//! @todo Enable this!
+				__set_bit(btn_label[j], cfg->pad[i]->keybit);
+			}
+			
+			status = input_register_device(cfg->pad[i]);
+			if (0 != status) {
+				pr_err("Could not registcfg->pad[i] device no %i.", i);
+				kfree(cfg->pad[i]->phys);
+				input_free_device(cfg->pad[i]);
+				cfg->pad[i] = NULL;
+			}
+
+			/** @todo set data pin to input? */
+			/** @todo enable pull-up on GPIO4 / GPIO7? */
+		}
+	}	
+    
+	return status;
 }
 
 void __exit pads_remove(struct pads_config *cfg) {
+	int idx;
+
+	for (idx = 0; idx < NUMBER_OF_INPUT_DEVICES; idx++) {
+		if (cfg->pad[idx]) {
+			kfree(cfg->pad[idx]->phys);
+			input_unregister_device(cfg->pad[idx]);
+			cfg->pad[idx] = NULL;
+		}
+	}
 }
 
