@@ -35,6 +35,8 @@
 
 #define DELAY 6
 #define BUFFER_SIZE 34
+#define NUMBER_OF_GPIOS 6
+#define NUMBER_OF_INPUT_DEVICES 5
 
 
 /*
@@ -43,13 +45,16 @@
  * Structuring of the gpio and gamepad arrays:
  * gpio: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>
  * pad: <pad 1, pad 2, pad 3, pad 4, pad 5>
+ *
  */
 struct config {
-	unsigned int gpio[6];
-	struct input_dev *pad[5];
+	unsigned int gpio[NUMBER_OF_GPIOS];
+	unsigned int gpio_cnt; // Counter used in communication with userspace. Should be set to NUMBER_OF_GPIOS if parameter gpio is valid.
+	struct input_dev *pad[NUMBER_OF_INPUT_DEVICES];
 	struct timer_list timer;
 	struct mutex mutex;
 	unsigned char player_mode;
+	int driver_usage_cnt;
 };
 
 /**

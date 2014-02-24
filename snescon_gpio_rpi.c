@@ -22,6 +22,8 @@
  * MA 02110-1301, USA.
  */
 
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include <linux/kernel.h>
 #include <linux/delay.h>
 #include <linux/module.h>
@@ -39,15 +41,35 @@ MODULE_DESCRIPTION("NES, SNES, gamepad driver for Raspberry Pi");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("1.0");
 
+struct config snescon_config = {
+	.gpio = {2, 3, 4, 7, 10, 11}, // Default values.
+	.gpio_cnt = NUMBER_OF_GPIOS
+};
+
+/**
+ * @brief Definition of module parameter gpio. This parameter are readable from the sysfs.
+ */
+module_param_array_named(gpio, snescon_config.gpio, uint, &(snescon_config.gpio_cnt), S_IRUGO);
+MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as following. <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
+
 /**
  * Init function for the driver.
  */
 static int __init snescon_init(void) {
-	/* Set up the gpio handler. */
+
+	/* Check if the used supplied a GPIO setting. All GPIOs must be set for the configuration to be prevalid. */
+	if (snescon_config.gpio_cnt != NUMBER_OF_GPIOS) {
+		pr_err("Number of GPIO pins in gpio configuration is not correct. Expected %i, actual %i\n", NUMBER_OF_GPIOS, snescon_config.gpio_cnt);
+		return -EINVAL;
+	}
+
+	/* Set up the gpio handler. */	
 	if (gpio_init() != 0) {
 		pr_err("Setup of the gpio handler failed\n");
 		return -EBUSY;
 	}
+
+	pr_info("Loaded driver\n");
     
 	return 0;
 }
