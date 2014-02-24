@@ -25,10 +25,10 @@
 #include "gpio.h"
 #include "pads.h"
 
-// Buttons found on the SNES gamepad.
+// Buttons found on the SNES gamepad
 const short btn_label[] = { BTN_B, BTN_Y, BTN_SELECT, BTN_START, BTN_A, BTN_X, BTN_TL, BTN_TR };
 
-// The order that the buttons of the SNES gamepad are stored in the byte string.
+// The order that the buttons of the SNES gamepad are stored in the byte string
 const unsigned char btn_index[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
 
 /**
@@ -296,7 +296,7 @@ void update_pads(struct config *cfg) {
 }
 
 /**
- * Clear status of buttons and axises of virtual devices
+ * Clear status of buttons and axises of virtual devices.
  * 
  * @param cfg The configuration
  * @param n_devs Number of devices to have all buttons and axises cleared

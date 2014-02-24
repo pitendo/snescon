@@ -24,7 +24,7 @@
 
 #include "gpio.h"
 
-volatile unsigned *gpio;	// I/O access
+volatile unsigned *gpio;	// I/O access.
 
 // GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO(x)
 #define INP_GPIO(g) *(gpio+((g)/10)) &= ~(7<<(((g)%10)*3))	// Set GPIO as input.
@@ -34,11 +34,11 @@ volatile unsigned *gpio;	// I/O access
 #define GPIO_CLR *(gpio + 10)	// Clears bits which are 1 and ignores bits which are 0.
 
 #define BCM2708_PERI_BASE        0x20000000
-#define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) /* GPIO controller */
+#define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) // GPIO controller.
 
 
 /**
- * Set GPIO high
+ * Set GPIO high.
  *
  * @param g GPIO
  */
@@ -47,7 +47,7 @@ void gpio_set(unsigned int g) {
 }
 
 /**
- * Set GPIO low
+ * Set GPIO low.
  *
  * @param g GPIO
  */
@@ -65,7 +65,7 @@ void gpio_input(unsigned int g) {
 }
 
 /**
- * Set GPIO as output
+ * Set GPIO as output.
  *
  * @param g GPIO
  */
@@ -74,7 +74,7 @@ void gpio_output(unsigned int g) {
 }
 
 /**
- * Read status of GPIO
+ * Read status of GPIO.
  *
  * @param g GPIO
  * @return Status of GPIO
@@ -84,7 +84,7 @@ unsigned char gpio_read(unsigned int g) {
 }
 
 /**
- * Read and negate status of all GPIOs
+ * Read and negate status of all GPIOs.
  *
  * @return Negated status of all GPIOs
  */
@@ -97,7 +97,7 @@ unsigned int gpio_read_all() {
 /**
  * Init function for the gpio part of the driver.
  *
- * @return result of the init operation.
+ * @return Result of the init operation
  */
 int __init gpio_init(void) {
 	/* Set up gpio pointer for direct register access */
@@ -111,7 +111,6 @@ int __init gpio_init(void) {
 
 /**
  * Exit function for the gpio part of the driver.
- *
  */
 void __exit gpio_exit(void) {
 	iounmap(gpio);
