@@ -51,6 +51,8 @@ struct snescon_config {
 	struct timer_list timer;
 	struct mutex mutex;
 	int driver_usage_cnt;
+	unsigned int gpio_id[NUMBER_OF_GPIOS];
+	unsigned int gpio_id_cnt; // Counter used in communication with userspace. Should be set to NUMBER_OF_GPIOS if parameter gpio_id is valid.
 };
 
 /**
@@ -108,8 +110,8 @@ static void snescon_close(struct input_dev* dev) {
  *
  */
 static struct snescon_config snescon_config = {
-	.pads_cfg.gpio = {2, 3, 4, 7, 10, 11}, // Default values for the GPIOs.
-	.pads_cfg.gpio_cnt = NUMBER_OF_GPIOS,
+	.gpio_id = {2, 3, 4, 7, 10, 11}, // Default values for the GPIOs.
+	.gpio_id_cnt = NUMBER_OF_GPIOS,
 	.pads_cfg.device_name = "SNES pad",
 	.pads_cfg.open = &snescon_open,
 	.pads_cfg.close = &snescon_close,
@@ -118,7 +120,7 @@ static struct snescon_config snescon_config = {
 /**
  * @brief Definition of module parameter gpio. This parameter are readable from the sysfs.
  */
-module_param_array_named(gpio, snescon_config.pads_cfg.gpio, uint, &(snescon_config.pads_cfg.gpio_cnt), S_IRUGO);
+module_param_array_named(gpio, snescon_config.gpio_id, uint, &(snescon_config.gpio_id_cnt), S_IRUGO);
 MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as follow: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
 
 /**
@@ -126,11 +128,15 @@ MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as follow: <clk
  */
 static int __init snescon_init(void) {
 	/* Check if the supplied GPIO setting are useful. All GPIOs must be set for the configuration to be prevalid. */
-	if (snescon_config.pads_cfg.gpio_cnt != NUMBER_OF_GPIOS) {
-		pr_err("Number of GPIO pins in gpio configuration is not correct. Expected %i, actual %i\n", NUMBER_OF_GPIOS, snescon_config.pads_cfg.gpio_cnt);
+	if (snescon_config.gpio_id_cnt != NUMBER_OF_GPIOS) {
+		pr_err("Number of GPIO pins in gpio configuration is not correct. Expected %i, actual %i\n", NUMBER_OF_GPIOS, snescon_config.gpio_id_cnt);
 		return -EINVAL;
 	}
-	/** @todo Add check so the provided GPIO setting are valid */
+
+	if (!gpio_list_valid(snescon_config.gpio_id, snescon_config.gpio_id_cnt)) {
+		pr_err("One of the GPIO pins in the configuration are not valid!\n");
+		return -EINVAL;
+	}
 
 	/* Set up the gpio handler. */
 	if (gpio_init() != 0) {

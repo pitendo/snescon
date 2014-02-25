@@ -52,7 +52,6 @@
  */
 struct pads_config {
 	unsigned int gpio[NUMBER_OF_GPIOS];
-	unsigned int gpio_cnt; // Counter used in communication with userspace. Should be set to NUMBER_OF_GPIOS if parameter gpio is valid.
 	struct input_dev *pad[NUMBER_OF_INPUT_DEVICES];
 	unsigned char player_mode;
 	char *device_name;
