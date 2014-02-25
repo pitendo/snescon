@@ -71,18 +71,18 @@ static void snescon_timer(unsigned long ptr) {
 static int snescon_open(struct input_dev* dev) {
 	struct snescon_config* cfg = input_get_drvdata(dev);
 	int status;
-    
+
 	status = mutex_lock_interruptible(&cfg->mutex);
 	if (status) {
 		return status;
 	}
-    
+
 	cfg->driver_usage_cnt++;
 	if (cfg->driver_usage_cnt > 0) {
 		/* Atleast one device open. Start the timer or reset the timeout. */
 		mod_timer(&cfg->timer, jiffies + REFRESH_TIME);
 	}
-    
+
 	mutex_unlock(&cfg->mutex);
 	return 0;
 }
@@ -93,7 +93,7 @@ static int snescon_open(struct input_dev* dev) {
  */
 static void snescon_close(struct input_dev* dev) {
 	struct snescon_config* cfg = input_get_drvdata(dev);
-    
+
 	mutex_lock(&cfg->mutex);
 	cfg->driver_usage_cnt--;
 	if (cfg->driver_usage_cnt <= 0) {
@@ -116,11 +116,40 @@ static struct snescon_config snescon_config = {
 };
 
 /**
+ * Setup all GPIOs and add them to the pads config.
+ * 
+ * @param cfg Pads config
+ * @param gpio_list List of GPIO id:s 
+ */
+void setup_gpio(struct pads_config *cfg, unsigned char *gpio_list) {
+	int i, bit;
+	
+	// Setup GPIO for clk and latch
+	for(i = 0; i < 2; i++) {
+		bit = gpio_get_bit(gpio_list[i]);
+		gpio_output(bit);
+		cfg->gpio[i] = bit;
+	}
+	
+	// Setup GPIO for port1_d0, port2_d0, port2_d1
+	for(i = 2; i < NUMBER_OF_GPIO-1; i++) {
+		bit = gpio_get_bit(gpio_list[i]);
+		gpio_input(bit);
+		gpio_enable_pull_up(bit);
+		cfg->gpio[i] = bit;
+	}
+	
+	// Setup GPIO for port1_pp
+	bit = gpio_get_bit(gpio_list[NUMBER_OF_GPIO-1]);
+	gpio_input(bit);
+	cfg->gpio[NUMBER_OF_GPIO-1] = bit;
+}
+
+/**
  * @brief Definition of module parameter gpio. This parameter are readable from the sysfs.
  */
 module_param_array_named(gpio, snescon_config.pads_cfg.gpio, uint, &(snescon_config.pads_cfg.gpio_cnt), S_IRUGO);
-MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as following. <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
-
+MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as follow: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
 
 /**
  * Init function for the driver.
@@ -133,15 +162,15 @@ static int __init snescon_init(void) {
 	}
 	/** @todo Add check so the provided GPIO setting are valid */
 
-	/* Set up the gpio handler. */	
+	/* Set up the gpio handler. */
 	if (gpio_init() != 0) {
 		pr_err("Setup of the gpio handler failed\n");
 		return -EBUSY;
 	}
 
 	/* Initiate the mutex and the timer */
-        mutex_init(&snescon_config.mutex);
-        setup_timer(&snescon_config.timer, snescon_timer, (long) &snescon_config);
+	mutex_init(&snescon_config.mutex);
+	setup_timer(&snescon_config.timer, snescon_timer, (long) &snescon_config);
 
 	if (pads_setup(&snescon_config.pads_cfg) != 0) {
 		pr_err("Setup of input_device failed!\n");
@@ -155,10 +184,9 @@ static int __init snescon_init(void) {
 	}
 
 	pr_info("Loaded driver\n");
-    
+
 	return 0;
 }
-
 
 /**
  * Exit function for the driver.
@@ -172,6 +200,6 @@ static void __exit snescon_exit(void) {
 	pr_info("driver exit\n");
 }
 
-module_init(snescon_init);
-module_exit(snescon_exit);
+module_init (snescon_init);
+module_exit (snescon_exit);
 
