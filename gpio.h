@@ -24,6 +24,7 @@
 
 #include <linux/kernel.h>
 #include <linux/init.h>
+#include <linux/delay.h>
 #include <asm/io.h>
 
 void gpio_set(unsigned int);
@@ -36,3 +37,4 @@ extern int gpio_init(void) __init;
 extern void gpio_exit(void);
 unsigned char gpio_valid(unsigned char);
 unsigned int gpio_get_bit(unsigned char);
+void gpio_enable_pull_up(unsigned int);

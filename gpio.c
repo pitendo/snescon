@@ -45,37 +45,51 @@ const unsigned char all_valid_gpio[] = { 0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15,
 /**
  * Set GPIO high.
  *
- * @param g GPIO
+ * @param g_bit GPIO
  */
-void gpio_set(unsigned int g) {
-	GPIO_SET = g;
+void gpio_set(unsigned int g_bit) {
+	GPIO_SET = g_bit;
 }
 
 /**
  * Set GPIO low.
  *
- * @param g GPIO
+ * @param g_bit GPIO
  */
-void gpio_clear(unsigned int g) {
-	GPIO_CLR = g;
+void gpio_clear(unsigned int g_bit) {
+	GPIO_CLR = g_bit;
 }
 
 /**
  * Set GPIO as input
  *
- * @param g GPIO
+ * @param g_bit GPIO
  */
-void gpio_input(unsigned int g) {
-	INP_GPIO(g);
+void gpio_input(unsigned int g_bit) {
+	INP_GPIO(g_bit);
 }
 
 /**
  * Set GPIO as output.
  *
- * @param g GPIO
+ * @param g_bit GPIO
  */
-void gpio_output(unsigned int g) {
-	OUT_GPIO(g);
+void gpio_output(unsigned int g_bit) {
+	OUT_GPIO(g_bit);
+}
+
+/**
+ * Activate internal pull-up.
+ * 
+ * @param g_bit GPIO
+ */
+void gpio_enable_pull_up(unsigned int g_bit) {
+	*(gpio + 37) = 2;
+	udelay(10);
+	*(gpio + 38) = g_bit;
+	udelay(10);
+	*(gpio + 37) = 0;
+	*(gpio + 38) = 0;
 }
 
 /**
@@ -84,8 +98,8 @@ void gpio_output(unsigned int g) {
  * @param g GPIO
  * @return Status of GPIO
  */
-unsigned char gpio_read(unsigned int g) {
-	return g & *(gpio + 13);
+unsigned char gpio_read(unsigned int g_bit) {
+	return g_bit & *(gpio + 13);
 }
 
 /**
@@ -93,7 +107,7 @@ unsigned char gpio_read(unsigned int g) {
  *
  * @return Negated status of all GPIOs
  */
-unsigned int gpio_read_all() {
+unsigned int gpio_read_all(void) {
 	return ~(*(gpio + 13));;
 }
 
@@ -122,13 +136,13 @@ void gpio_exit(void) {
 /**
  * Check if a GPIO number is valid.
  * 
- * @param g GPIO number to test validness of
+ * @param g_id GPIO number to test validness of
  * @return 1 if g is valid, otherwise 0
  */
-unsigned char gpio_valid(unsigned char g) {
+unsigned char gpio_valid(unsigned char g_id) {
 	int i;
 	for(i = 0; i < N_VALID_GPIO; i++) {
-		if(g == all_valid_gpio[i]) {
+		if(g_id == all_valid_gpio[i]) {
 			return 1;
 		}
 	}
@@ -138,17 +152,9 @@ unsigned char gpio_valid(unsigned char g) {
 /**
  * Calculate the bit in the GPIO register that a specific GPIO number corresponds to.
  * 
- * @param g The GPIO number
+ * @param g_id The GPIO number
  * @return The bit that GPIO g corresponds to in the GPIO register
  */
-unsigned int gpio_get_bit(unsigned char g) {
-	int i, res;
-	if(g == 0) {
-		return 1;
-	}
-	res = 2;
-	for(i = 1; i < g; i++) {
-		res *= 2;
-	}
-	return res;
+unsigned int gpio_get_bit(unsigned char g_id) {
+	return 1 << g_id;
 }
