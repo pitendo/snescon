@@ -34,4 +34,5 @@ unsigned char gpio_read(unsigned int);
 unsigned int gpio_read_all(void);
 extern int gpio_init(void) __init;
 extern void gpio_exit(void);
-unsigned char gpio_valid(unsigned char)
+unsigned char gpio_valid(unsigned char);
+unsigned int gpio_get_bit(unsigned char);

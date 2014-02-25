@@ -120,9 +120,9 @@ void gpio_exit(void) {
 }
 
 /**
- * Check if a GPIO is valid.
+ * Check if a GPIO number is valid.
  * 
- * @param g GPIO to test validness of
+ * @param g GPIO number to test validness of
  * @return 1 if g is valid, otherwise 0
  */
 unsigned char gpio_valid(unsigned char g) {
@@ -133,4 +133,22 @@ unsigned char gpio_valid(unsigned char g) {
 		}
 	}
 	return 0;
+}
+
+/**
+ * Calculate the bit in the GPIO register that a specific GPIO number corresponds to .
+ * 
+ * @param g The GPIO number
+ * @return The bit that GPIO g corresponds to in the GPIO register
+ */
+unsigned int gpio_get_bit(unsigned char g) {
+	int i, res;
+	if(g == 0) {
+		return 1;
+	}
+	res = 2;
+	for(i = 1; i < g; i++) {
+		res *= 2;
+	}
+	return res
 }
