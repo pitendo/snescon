@@ -57,6 +57,8 @@ struct pads_config {
 	char *device_name;
 	int (* open) (struct input_dev *dev);
 	void (* close) (struct input_dev *dev);
+	bool enable_multitap;
+	bool enable_fourscore;
 };
 
 extern void pads_update(struct pads_config *);
