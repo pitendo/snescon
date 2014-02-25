@@ -26,10 +26,10 @@
 #include "pads.h"
 
 // Buttons found on the SNES gamepad
-const short btn_label[] = { BTN_B, BTN_Y, BTN_SELECT, BTN_START, BTN_A, BTN_X, BTN_TL, BTN_TR };
+static const short btn_label[] = { BTN_B, BTN_Y, BTN_SELECT, BTN_START, BTN_A, BTN_X, BTN_TL, BTN_TR };
 
 // The order that the buttons of the SNES gamepad are stored in the byte string
-const unsigned char btn_index[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
+static const unsigned char btn_index[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
 
 /**
  * Read the data pins of all connected devices.
@@ -37,7 +37,7 @@ const unsigned char btn_index[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
  * @param cfg The pad configuration
  * @param data Array to store the read data in
  */
-void pads_read(struct pads_config *cfg, unsigned int *data) {
+static void pads_read(struct pads_config *cfg, unsigned int *data) {
 	int i;
 	unsigned int clk, latch, pp;
 
@@ -78,7 +78,7 @@ void pads_read(struct pads_config *cfg, unsigned int *data) {
  * @param cfg The pad configuration
  * @return 1 if a SNES Multitap is connected, otherwise 0
  */
-unsigned char multitap_connected(struct pads_config *cfg) {
+static unsigned char multitap_connected(struct pads_config *cfg) {
 	int i;
 	unsigned char byte = 0;
 	unsigned int clk, latch, d0, d1;
@@ -143,7 +143,7 @@ unsigned char multitap_connected(struct pads_config *cfg) {
  * @param cfg The pad configuration
  * @return 1 if a NES Four Score is connected, otherwise 0
  */
-unsigned char fourscore_connected(struct pads_config *cfg, unsigned int *data) {
+static unsigned char fourscore_connected(struct pads_config *cfg, unsigned int *data) {
 	return !(cfg->gpio[2] & data[16]) &&
 	       !(cfg->gpio[2] & data[17]) &&
 	       !(cfg->gpio[2] & data[18]) &&
@@ -168,7 +168,7 @@ unsigned char fourscore_connected(struct pads_config *cfg, unsigned int *data) {
  * @param cfg The pad configuration
  * @param n_devs Number of devices to have all buttons and axises cleared
  */
-void clear_devices(struct pads_config *cfg, unsigned char n_devs) {
+static void clear_devices(struct pads_config *cfg, unsigned char n_devs) {
 	struct input_dev *dev;
 	int i, j;
 	for(i = 0; i < n_devs; i++) {
@@ -316,13 +316,11 @@ void pads_update(struct pads_config *cfg) {
 }
 
 /**
- * Setup all GPIOs and add them to the pads config.
+ * Setup all GPIOs.
  * 
  * @param cfg Pads config
- * @param gpio_list List of GPIO id:s
- * @return 1 if GPIO setup was sucessful, otherwise 0
  */
-void pads_setup_gpio(struct pads_config *cfg) {
+static void pads_setup_gpio(struct pads_config *cfg) {
 	int i, bit;
 	
 	// Setup GPIO for clk and latch
@@ -395,13 +393,15 @@ int __init pads_setup(struct pads_config *cfg) {
 			
 			status = input_register_device(cfg->pad[i]);
 			if (status != 0) {
-				pr_err("Could not registcfg->pad[i] device no %i.", i);
+				pr_err("Could not register device no %i.", i);
 				kfree(cfg->pad[i]->phys);
 				input_free_device(cfg->pad[i]);
 				cfg->pad[i] = NULL;
 			}
-			
-			// Setup all GPIO pins
+		}
+	
+		if (status == 0) {
+			/* Setup all GPIO pins */
 			pads_setup_gpio(cfg);
 		}
 	}	
