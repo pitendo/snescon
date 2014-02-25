@@ -139,8 +139,9 @@ void gpio_exit(void) {
  * @return 1 if g is valid, otherwise 0
  */
 unsigned char gpio_valid(unsigned char g_id) {
-	int i, len;
-	len = sizeof(all_valid_gpio) / sizeof(all_valid_gpio[0]);
+	const int len = sizeof(all_valid_gpio) / sizeof(all_valid_gpio[0]);
+	int i;
+
 	for(i = 0; i < len; i++) {
 		if(g_id == all_valid_gpio[i]) {
 			return 1;
