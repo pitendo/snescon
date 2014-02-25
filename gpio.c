@@ -36,6 +36,11 @@ volatile unsigned *gpio;	// I/O access.
 #define BCM2708_PERI_BASE        0x20000000
 #define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) // GPIO controller.
 
+/*
+ * All GPIOs found on the Raspberry Pi P1 Header and how many they are in total.
+ */
+#define N_VALID_GPIO 20;
+const unsigned char all_valid_gpio[] = { 0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 17, 18, 21, 22, 23, 24, 25, 27 };
 
 /**
  * Set GPIO high.
@@ -92,8 +97,6 @@ unsigned int gpio_read_all() {
 	return ~(*(gpio + 13));;
 }
 
-
-
 /**
  * Init function for the gpio part of the driver.
  *
@@ -105,7 +108,7 @@ int __init gpio_init(void) {
 		pr_err("io remap failed\n");
 		return -EBUSY;
 	}
-    
+
 	return 0;
 }
 
@@ -114,4 +117,20 @@ int __init gpio_init(void) {
  */
 void gpio_exit(void) {
 	iounmap(gpio);
+}
+
+/**
+ * Check if a GPIO is valid.
+ * 
+ * @param g GPIO to test validness of
+ * @return 1 if g is valid, otherwise 0
+ */
+unsigned char gpio_valid(unsigned char g) {
+	int i;
+	for(i = 0; i < N_VALID_GPIO; i++) {
+		if(g == all_valid_gpio[i]) {
+			return 1;
+		}
+	}
+	return 0;
 }
