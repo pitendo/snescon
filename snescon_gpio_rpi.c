@@ -116,36 +116,6 @@ static struct snescon_config snescon_config = {
 };
 
 /**
- * Setup all GPIOs and add them to the pads config.
- * 
- * @param cfg Pads config
- * @param gpio_list List of GPIO id:s 
- */
-void setup_gpio(struct pads_config *cfg, unsigned char *gpio_list) {
-	int i, bit;
-	
-	// Setup GPIO for clk and latch
-	for(i = 0; i < 2; i++) {
-		bit = gpio_get_bit(gpio_list[i]);
-		gpio_output(bit);
-		cfg->gpio[i] = bit;
-	}
-	
-	// Setup GPIO for port1_d0, port2_d0, port2_d1
-	for(i = 2; i < NUMBER_OF_GPIO-1; i++) {
-		bit = gpio_get_bit(gpio_list[i]);
-		gpio_input(bit);
-		gpio_enable_pull_up(bit);
-		cfg->gpio[i] = bit;
-	}
-	
-	// Setup GPIO for port1_pp
-	bit = gpio_get_bit(gpio_list[NUMBER_OF_GPIO-1]);
-	gpio_input(bit);
-	cfg->gpio[NUMBER_OF_GPIO-1] = bit;
-}
-
-/**
  * @brief Definition of module parameter gpio. This parameter are readable from the sysfs.
  */
 module_param_array_named(gpio, snescon_config.pads_cfg.gpio, uint, &(snescon_config.pads_cfg.gpio_cnt), S_IRUGO);

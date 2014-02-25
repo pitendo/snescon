@@ -61,6 +61,7 @@ struct pads_config {
 };
 
 extern void pads_update(struct pads_config *cfg);
+unsigned char pads_init_gpio(struct pads_config *cfg, unsigned char *gpio_list);
 extern int  pads_setup(struct pads_config *cfg) __init;
 extern void pads_remove(struct pads_config *cfg) __exit;
 

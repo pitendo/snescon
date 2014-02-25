@@ -315,6 +315,44 @@ void pads_update(struct pads_config *cfg) {
 	}
 }
 
+/**
+ * Setup all GPIOs and add them to the pads config.
+ * 
+ * @param cfg Pads config
+ * @param gpio_list List of GPIO id:s
+ * @return 1 if GPIO setup was sucessful, otherwise 0
+ */
+unsigned char pads_init_gpio(struct pads_config *cfg, unsigned char *gpio_list) {
+	int i, bit;
+	
+	// Check that all GPIO id:s are valid
+	for(i = 0; i < NUMBER_OF_GPIO; i++) {
+		if(!gpio_valid(gpio_list[i])) {
+			return 0
+		}
+	}
+	
+	// Setup GPIO for clk and latch
+	for(i = 0; i < 2; i++) {
+		bit = gpio_get_bit(gpio_list[i]);
+		gpio_output(bit);
+		cfg->gpio[i] = bit;
+	}
+	
+	// Setup GPIO for port1_d0, port2_d0, port2_d1
+	for(i = 2; i < NUMBER_OF_GPIO-1; i++) {
+		bit = gpio_get_bit(gpio_list[i]);
+		gpio_input(bit);
+		gpio_enable_pull_up(bit);
+		cfg->gpio[i] = bit;
+	}
+	
+	// Setup GPIO for port1_pp
+	bit = gpio_get_bit(gpio_list[NUMBER_OF_GPIO-1]);
+	gpio_input(bit);
+	cfg->gpio[NUMBER_OF_GPIO-1] = bit;
+}
+
 int __init pads_setup(struct pads_config *cfg) {
 	int i, j;
 	int status = 0;
@@ -327,7 +365,7 @@ int __init pads_setup(struct pads_config *cfg) {
 		}
 
 
-		if (0 == status) {
+		if (status == 0) {
 			/* Create the memory for the name */
 			char *phys = kzalloc(BUFFER_SIZE, GFP_KERNEL);
 			if (!phys) {
@@ -341,7 +379,7 @@ int __init pads_setup(struct pads_config *cfg) {
 
 		}
 
-		if (0 == status) {
+		if (status == 0) {
 			/* Configure the main part of the input device */
 
 			cfg->pad[i]->name = cfg->device_name;
@@ -366,7 +404,7 @@ int __init pads_setup(struct pads_config *cfg) {
 			}
 			
 			status = input_register_device(cfg->pad[i]);
-			if (0 != status) {
+			if (status != 0) {
 				pr_err("Could not registcfg->pad[i] device no %i.", i);
 				kfree(cfg->pad[i]->phys);
 				input_free_device(cfg->pad[i]);
