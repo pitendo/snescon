@@ -351,6 +351,8 @@ unsigned char pads_init_gpio(struct pads_config *cfg, unsigned char *gpio_list) 
 	bit = gpio_get_bit(gpio_list[NUMBER_OF_GPIO-1]);
 	gpio_input(bit);
 	cfg->gpio[NUMBER_OF_GPIO-1] = bit;
+	
+	return 1;
 }
 
 int __init pads_setup(struct pads_config *cfg) {
