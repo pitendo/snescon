@@ -51,7 +51,7 @@ struct snescon_config {
 	struct timer_list timer;
 	struct mutex mutex;
 	int driver_usage_cnt;
-	unsigned char gpio_id[NUMBER_OF_GPIOS];
+	unsigned int gpio_id[NUMBER_OF_GPIOS];
 	unsigned int gpio_id_cnt; // Counter used in communication with userspace. Should be set to NUMBER_OF_GPIOS if parameter gpio_id is valid.
 };
 
@@ -120,7 +120,7 @@ static struct snescon_config snescon_config = {
 /**
  * @brief Definition of module parameter gpio. This parameter are readable from the sysfs.
  */
-module_param_array_named(gpio, snescon_config.gpio_id, byte, &(snescon_config.gpio_id_cnt), S_IRUGO);
+module_param_array_named(gpio, snescon_config.gpio_id, uint, &(snescon_config.gpio_id_cnt), S_IRUGO);
 MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as follow: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
 
 /**

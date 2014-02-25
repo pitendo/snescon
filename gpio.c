@@ -22,6 +22,7 @@
  * MA 02110-1301, USA.
  */
 
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 #include "gpio.h"
 
 volatile unsigned *gpio;	// I/O access.
@@ -158,7 +159,7 @@ unsigned char gpio_valid(unsigned char g_id) {
  * @param len Length of list
  * @return 1 if all GPIOs in list is valid, otherwise 0
  */
-unsigned char gpio_list_valid(unsigned char *list, unsigned char len) {
+unsigned char gpio_list_valid(unsigned int *list, unsigned char len) {
 	int i;
 	// Check that all GPIO id:s are valid
 	for(i = 0; i < len; i++) {

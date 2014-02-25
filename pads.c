@@ -22,6 +22,8 @@
  * MA 02110-1301, USA.
  */
 
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include "gpio.h"
 #include "pads.h"
 
@@ -387,7 +389,6 @@ int __init pads_setup(struct pads_config *cfg) {
 			}
             		
 			for (j = 0; j < 8; j++) {
-				//! @todo Enable this!
 				__set_bit(btn_label[j], cfg->pad[i]->keybit);
 			}
 			
@@ -414,9 +415,10 @@ void __exit pads_remove(struct pads_config *cfg) {
 
 	for (idx = 0; idx < NUMBER_OF_INPUT_DEVICES; idx++) {
 		if (cfg->pad[idx]) {
-			kfree(cfg->pad[idx]->phys);
+			char *phys = (char*)cfg->pad[idx]->phys;
 			input_unregister_device(cfg->pad[idx]);
 			cfg->pad[idx] = NULL;
+			kfree(phys);
 		}
 	}
 }
