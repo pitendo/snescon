@@ -60,9 +60,8 @@ struct pads_config {
 	void (* close) (struct input_dev *dev);
 };
 
-extern void pads_update(struct pads_config *cfg);
-unsigned char pads_init_gpio(struct pads_config *cfg, unsigned char *gpio_list);
-extern int  pads_setup(struct pads_config *cfg) __init;
-extern void pads_remove(struct pads_config *cfg) __exit;
+extern void pads_update(struct pads_config *);
+extern int  pads_setup(struct pads_config *) __init;
+extern void pads_remove(struct pads_config *) __exit;
 
 #endif /* _PADS_H_ */

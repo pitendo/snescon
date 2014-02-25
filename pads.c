@@ -322,37 +322,25 @@ void pads_update(struct pads_config *cfg) {
  * @param gpio_list List of GPIO id:s
  * @return 1 if GPIO setup was sucessful, otherwise 0
  */
-unsigned char pads_init_gpio(struct pads_config *cfg, unsigned char *gpio_list) {
+void pads_setup_gpio(struct pads_config *cfg) {
 	int i, bit;
-	
-	// Check that all GPIO id:s are valid
-	for(i = 0; i < NUMBER_OF_GPIO; i++) {
-		if(!gpio_valid(gpio_list[i])) {
-			return 0
-		}
-	}
 	
 	// Setup GPIO for clk and latch
 	for(i = 0; i < 2; i++) {
-		bit = gpio_get_bit(gpio_list[i]);
+		bit = cfg->gpio[i];
 		gpio_output(bit);
-		cfg->gpio[i] = bit;
 	}
 	
 	// Setup GPIO for port1_d0, port2_d0, port2_d1
-	for(i = 2; i < NUMBER_OF_GPIO-1; i++) {
-		bit = gpio_get_bit(gpio_list[i]);
+	for(i = 2; i < 5; i++) {
+		bit = cfg->gpio[i];
 		gpio_input(bit);
 		gpio_enable_pull_up(bit);
-		cfg->gpio[i] = bit;
 	}
 	
 	// Setup GPIO for port1_pp
-	bit = gpio_get_bit(gpio_list[NUMBER_OF_GPIO-1]);
+	bit = cfg->gpio[5];
 	gpio_input(bit);
-	cfg->gpio[NUMBER_OF_GPIO-1] = bit;
-	
-	return 1;
 }
 
 int __init pads_setup(struct pads_config *cfg) {
@@ -412,9 +400,9 @@ int __init pads_setup(struct pads_config *cfg) {
 				input_free_device(cfg->pad[i]);
 				cfg->pad[i] = NULL;
 			}
-
-			/** @todo set data pin to input? */
-			/** @todo enable pull-up on GPIO4 / GPIO7? */
+			
+			// Setup all GPIO pins
+			pads_setup_gpio(cfg);
 		}
 	}	
     

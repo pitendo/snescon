@@ -150,6 +150,24 @@ unsigned char gpio_valid(unsigned char g_id) {
 	return 0;
 }
 
+
+/**
+ * Check if all GPIOs in the list are valid.
+ * 
+ * @param list List of GPIO id:s
+ * @param len Length of list
+ * @return 1 if all GPIOs in list is valid, otherwise 0
+ */
+unsigned char gpio_list_valid(unsigned char *list, unsigned char len) {
+	// Check that all GPIO id:s are valid
+		for(i = 0; i < len; i++) {
+			if(!gpio_valid(list[i])) {
+				return 0
+			}
+		}
+		return 1;
+}
+
 /**
  * Calculate the bit in the GPIO register that a specific GPIO number corresponds to.
  * 

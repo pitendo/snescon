@@ -22,6 +22,9 @@
  * MA 02110-1301, USA.
  */
 
+#ifndef _GPIO_H_
+#define _GPIO_H_
+
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/delay.h>
@@ -36,5 +39,8 @@ unsigned int gpio_read_all(void);
 extern int gpio_init(void) __init;
 extern void gpio_exit(void);
 unsigned char gpio_valid(unsigned char);
+unsigned char gpio_list_valid(unsigned char *, unsigned char);
 unsigned int gpio_get_bit(unsigned char);
 void gpio_enable_pull_up(unsigned int);
+
+#endif // _GPIO_H_
