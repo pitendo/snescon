@@ -159,13 +159,14 @@ unsigned char gpio_valid(unsigned char g_id) {
  * @return 1 if all GPIOs in list is valid, otherwise 0
  */
 unsigned char gpio_list_valid(unsigned char *list, unsigned char len) {
+	int i;
 	// Check that all GPIO id:s are valid
-		for(i = 0; i < len; i++) {
-			if(!gpio_valid(list[i])) {
-				return 0
-			}
+	for(i = 0; i < len; i++) {
+		if(!gpio_valid(list[i])) {
+			return 0;
 		}
-		return 1;
+	}
+	return 1;
 }
 
 /**
