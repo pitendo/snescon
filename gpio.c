@@ -136,7 +136,7 @@ unsigned char gpio_valid(unsigned char g) {
 }
 
 /**
- * Calculate the bit in the GPIO register that a specific GPIO number corresponds to .
+ * Calculate the bit in the GPIO register that a specific GPIO number corresponds to.
  * 
  * @param g The GPIO number
  * @return The bit that GPIO g corresponds to in the GPIO register
@@ -150,5 +150,5 @@ unsigned int gpio_get_bit(unsigned char g) {
 	for(i = 1; i < g; i++) {
 		res *= 2;
 	}
-	return res
+	return res;
 }
