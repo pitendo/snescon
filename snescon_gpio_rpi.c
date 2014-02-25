@@ -51,7 +51,7 @@ struct snescon_config {
 	struct timer_list timer;
 	struct mutex mutex;
 	int driver_usage_cnt;
-	unsigned int gpio_id[NUMBER_OF_GPIOS];
+	unsigned char gpio_id[NUMBER_OF_GPIOS];
 	unsigned int gpio_id_cnt; // Counter used in communication with userspace. Should be set to NUMBER_OF_GPIOS if parameter gpio_id is valid.
 };
 
@@ -120,22 +120,30 @@ static struct snescon_config snescon_config = {
 /**
  * @brief Definition of module parameter gpio. This parameter are readable from the sysfs.
  */
-module_param_array_named(gpio, snescon_config.gpio_id, uint, &(snescon_config.gpio_id_cnt), S_IRUGO);
+module_param_array_named(gpio, snescon_config.gpio_id, byte, &(snescon_config.gpio_id_cnt), S_IRUGO);
 MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as follow: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
 
 /**
  * Init function for the driver.
  */
 static int __init snescon_init(void) {
+	unsigned int i;
+	
 	/* Check if the supplied GPIO setting are useful. All GPIOs must be set for the configuration to be prevalid. */
 	if (snescon_config.gpio_id_cnt != NUMBER_OF_GPIOS) {
 		pr_err("Number of GPIO pins in gpio configuration is not correct. Expected %i, actual %i\n", NUMBER_OF_GPIOS, snescon_config.gpio_id_cnt);
 		return -EINVAL;
 	}
 
+	/* Final validation of the provided configuration. */
 	if (!gpio_list_valid(snescon_config.gpio_id, snescon_config.gpio_id_cnt)) {
 		pr_err("One of the GPIO pins in the configuration are not valid!\n");
 		return -EINVAL;
+	}
+
+	/* Fill in the gpio struct with bit values. */
+	for (i = 0; i < NUMBER_OF_GPIOS; ++i) {
+		snescon_config.pads_cfg.gpio[i] = gpio_get_bit(snescon_config.gpio_id[i]);
 	}
 
 	/* Set up the gpio handler. */
