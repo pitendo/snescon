@@ -49,6 +49,9 @@
  * gpio: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>
  * pad: <pad 1, pad 2, pad 3, pad 4, pad 5>
  *
+ * enable_multitap and enable_fourscore are redable and writable from userspace (sysfs parameter).
+ * There are no message to the driver when the variable are written. So they need to be handled as the can change at any time.
+ *
  */
 struct pads_config {
 	unsigned int gpio[NUMBER_OF_GPIOS];

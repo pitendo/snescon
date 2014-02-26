@@ -85,6 +85,11 @@ static unsigned char multitap_connected(struct pads_config *cfg) {
 	unsigned char byte = 0;
 	unsigned int clk, latch, d0, d1;
 
+	/* Early return for readability. */
+	if (!(cfg->enable_multitap)) {
+		return 0;
+	}
+
 	// Store GPIOs in variables
 	clk = cfg->gpio[0];
 	latch = cfg->gpio[1];
@@ -146,6 +151,10 @@ static unsigned char multitap_connected(struct pads_config *cfg) {
  * @return 1 if a NES Four Score is connected, otherwise 0
  */
 static unsigned char fourscore_connected(struct pads_config *cfg, unsigned int *data) {
+	if (!(cfg->enable_fourscore)) {
+		return 0;
+	}
+
 	return !(cfg->gpio[2] & data[16]) &&
 	       !(cfg->gpio[2] & data[17]) &&
 	       !(cfg->gpio[2] & data[18]) &&

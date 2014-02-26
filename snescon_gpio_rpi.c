@@ -126,16 +126,16 @@ module_param_array_named(gpio, snescon_config.gpio_id, uint, &(snescon_config.gp
 MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as follow: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
 
 /**
- * @brief Definition of module parameter enable_multitap. This parameter are readable from the sysfs.
+ * @brief Definition of module parameter enable_multitap. This parameter are readable and writable from the sysfs.
  */
-module_param_named(multitap, snescon_config.pads_cfg.enable_multitap, bool, S_IRUGO);
-MODULE_PARM_DESC(multitap, "Enable/disable multitap. Default is enabled.");
+module_param_named(en_multitap, snescon_config.pads_cfg.enable_multitap, bool, S_IRUGO | S_IWUSR);
+MODULE_PARM_DESC(en_multitap, "Enable/disable multitap. Default is enabled.");
 
 /**
- * @brief Definition of module parameter enable_fourscore. This parameter are readable from the sysfs.
+ * @brief Definition of module parameter enable_fourscore. This parameter are readable and writable from the sysfs.
  */
-module_param_named(fourscore, snescon_config.pads_cfg.enable_fourscore, bool, S_IRUGO);
-MODULE_PARM_DESC(fourscore, "Enable/disable fourscore. Default is enabled.");
+module_param_named(en_fourscore, snescon_config.pads_cfg.enable_fourscore, bool, S_IRUGO | S_IWUSR);
+MODULE_PARM_DESC(en_fourscore, "Enable/disable fourscore. Default is enabled.");
 
 /**
  * Init function for the driver.
