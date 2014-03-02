@@ -2,9 +2,9 @@
 # Set environment variable KERNEL_SRC to point to top of the kernel source
 # And set CCPREFIX to point to compiler location with cross compile prefix
 
-TARGET = snescon
+TARGET = snescon_gpio_rpi
 obj-m += $(TARGET).o
-$(TARGET)-objs := gpio.o pads.o snescon_gpio_rpi.o
+$(TARGET)-objs := gpio.o pads.o snescon.o
 
 KERNEL_SRC_LOCATION = /lib/modules/$(KVERSION)/build
 CROSS_COMPILE_SETTINGS =
