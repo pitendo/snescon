@@ -142,6 +142,7 @@ MODULE_PARM_DESC(en_fourscore, "Enable/disable fourscore. Default is enabled.");
  */
 static int __init snescon_init(void) {
 	unsigned int i;
+	unsigned int status = 0;
 	
 	/* Check if the supplied GPIO setting are useful. All GPIOs must be set for the configuration to be prevalid. */
 	if (snescon_config.gpio_id_cnt != NUMBER_OF_GPIOS) {
@@ -166,21 +167,21 @@ static int __init snescon_init(void) {
 		return -EBUSY;
 	}
 
-	/* Initiate the mutex and the timer */
-	mutex_init(&snescon_config.mutex);
-	setup_timer(&snescon_config.timer, snescon_timer, (long) &snescon_config);
 
-	if (pads_setup(&snescon_config.pads_cfg) != 0) {
+	status = pads_setup(&snescon_config.pads_cfg);
+	if (status != 0) {
 		pr_err("Setup of input_device failed!\n");
 
 		/* Cleanup allocated resourses */
-		del_timer(&snescon_config.timer);
-		mutex_destroy(&snescon_config.mutex);
 		gpio_exit();
 
-		return -ENODEV;
+		return status;
 	}
 
+	/* Initiate the mutex and the timer */
+	mutex_init(&snescon_config.mutex);
+	setup_timer(&snescon_config.timer, snescon_timer, (long) &snescon_config);
+	
 	pr_info("Loaded driver\n");
 
 	return 0;

@@ -331,9 +331,9 @@ void pads_update(struct pads_config *cfg) {
  * 
  * @param cfg Pads config
  */
-static void pads_setup_gpio(struct pads_config *cfg) {
+static void __init pads_setup_gpio(struct pads_config *cfg) {
 	int i, bit;
-	
+
 	// Setup GPIO for clk and latch
 	for(i = 0; i < 2; i++) {
 		bit = cfg->gpio[i];
@@ -355,7 +355,7 @@ static void pads_setup_gpio(struct pads_config *cfg) {
 int __init pads_setup(struct pads_config *cfg) {
 	int i, j;
 	int status = 0;
-   
+
 	for (i = 0; (i < NUMBER_OF_INPUT_DEVICES) && (0 == status); ++i) {
 		cfg->pad[i] = input_allocate_device();
 		if (!cfg->pad[i]) {
@@ -403,18 +403,21 @@ int __init pads_setup(struct pads_config *cfg) {
 			
 			status = input_register_device(cfg->pad[i]);
 			if (status != 0) {
-				pr_err("Could not register device no %i.", i);
+				pr_err("Could not register device no %i.\n", i);
 				kfree(cfg->pad[i]->phys);
 				input_free_device(cfg->pad[i]);
 				cfg->pad[i] = NULL;
 			}
 		}
-	
-		if (status == 0) {
-			/* Setup all GPIO pins */
-			pads_setup_gpio(cfg);
-		}
 	}	
+
+	if (status == 0) {
+		/* 
+		 * Done with the input event handlers. 
+		 * Setup the GPIO pins
+		 */
+		pads_setup_gpio(cfg);
+	}
     
 	return status;
 }
