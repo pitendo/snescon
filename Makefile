@@ -6,6 +6,8 @@ TARGET = snescon_gpio_rpi
 obj-m += $(TARGET).o
 $(TARGET)-objs := gpio.o pads.o snescon.o
 
+KVERSION=$(shell uname -r)
+
 KERNEL_SRC_LOCATION = /lib/modules/$(KVERSION)/build
 CROSS_COMPILE_SETTINGS =
 
