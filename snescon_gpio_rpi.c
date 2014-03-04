@@ -629,7 +629,7 @@ static int __init pads_setup(struct pads_config *cfg) {
 	return status;
 }
 
-void __exit pads_remove(struct pads_config *cfg) {
+static void __exit pads_remove(struct pads_config *cfg) {
 	int idx;
 
 	for (idx = 0; idx < NUMBER_OF_INPUT_DEVICES; idx++) {
