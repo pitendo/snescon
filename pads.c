@@ -352,6 +352,12 @@ static void __init pads_setup_gpio(struct pads_config *cfg) {
 	gpio_input(bit);
 }
 
+/**
+ * Setup gamepads
+ * 
+ * @param cfg Pads configuration
+ * @return Status
+ */
 int __init pads_setup(struct pads_config *cfg) {
 	int i, j;
 	int status = 0;
