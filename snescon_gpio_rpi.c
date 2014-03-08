@@ -427,7 +427,7 @@ static void pads_update(struct pads_config *cfg) {
 	unsigned char i, j;
 	struct input_dev *dev;
 
-	if (enable_multitap && multitap_connected(cfg)) {
+	if (cfg->enable_multitap && multitap_connected(cfg)) {
 		// SNES Multitap
 		pads_read_multitap(cfg, data);
 		
@@ -492,7 +492,7 @@ static void pads_update(struct pads_config *cfg) {
 	} else {
 		pads_read(cfg, data);
 	
-		if (enable_fourscore && fourscore_connected(cfg, data)) {
+		if (cfg->enable_fourscore && fourscore_connected(cfg, data)) {
 			// NES Four Score
 	
 			// Player 1 and 2
