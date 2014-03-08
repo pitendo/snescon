@@ -207,7 +207,7 @@ static unsigned int gpio_get_bit(unsigned char g_id) {
 
 #define DELAY 6
 #define BUFFER_SIZE 34
-#define BITS_LENGTH_MUTLTITAP 34
+#define BITS_LENGTH_MULTITAP 34
 #define BITS_LENGTH 24
 #define NUMBER_OF_GPIOS 6
 #define NUMBER_OF_INPUT_DEVICES 5
