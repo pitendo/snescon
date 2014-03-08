@@ -207,6 +207,8 @@ static unsigned int gpio_get_bit(unsigned char g_id) {
 
 #define DELAY 6
 #define BUFFER_SIZE 34
+#define BITS_LENGTH_MUTLTITAP 34
+#define BITS_LENGTH 24
 #define NUMBER_OF_GPIOS 6
 #define NUMBER_OF_INPUT_DEVICES 5
 
@@ -246,6 +248,32 @@ static const unsigned char btn_index[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
  */
 static void pads_read(struct pads_config *cfg, unsigned int *data) {
 	int i;
+	unsigned int clk, latch;
+
+	clk = cfg->gpio[0];
+	latch = cfg->gpio[1];
+
+	gpio_set(clk | latch);
+	udelay(DELAY * 2);
+	gpio_clear(latch);
+
+	for (i = 0; i < BITS_LENGTH; i++) {
+		udelay (DELAY);
+		gpio_clear(clk);
+		data[i] = gpio_read_all();
+		udelay(DELAY);
+		gpio_set(clk);
+	}
+}
+
+/**
+ * Read data pins of SNES Multitap and SNES pad connected to port 1.
+ *
+ * @param cfg The pad configuration
+ * @param data Array to store the read data in
+ */
+static void pads_read_multitap(struct pads_config *cfg, unsigned int *data) {
+	int i;
 	unsigned int clk, latch, pp;
 
 	clk = cfg->gpio[0];
@@ -256,7 +284,7 @@ static void pads_read(struct pads_config *cfg, unsigned int *data) {
 	udelay(DELAY * 2);
 	gpio_clear(latch);
 
-	for (i = 0; i < BUFFER_SIZE / 2; i++) {
+	for (i = 0; i < BITS_LENGTH_MULTITAP / 2; i++) {
 		udelay (DELAY);
 		gpio_clear(clk);
 		data[i] = gpio_read_all();
@@ -267,7 +295,7 @@ static void pads_read(struct pads_config *cfg, unsigned int *data) {
 	// Set PP low
 	gpio_clear(pp);
 
-	for (; i < BUFFER_SIZE; i++) {
+	for (; i < BITS_LENGTH_MULTITAP; i++) {
 		udelay (DELAY);
 		gpio_clear(clk);
 		data[i] = gpio_read_all();
@@ -409,11 +437,10 @@ static void pads_update(struct pads_config *cfg) {
 	unsigned char i, j;
 	struct input_dev *dev;
 
-	pads_read(cfg, data);
-
 	if (multitap_connected(cfg)) {
 		// SNES Multitap
-
+		pads_read_multitap(cfg, data);
+		
 		// Set 5 player mode
 		cfg->player_mode = 5;
 
@@ -472,62 +499,66 @@ static void pads_update(struct pads_config *cfg) {
 		input_report_abs(dev, ABS_Y, !(g & data[21]) - !(g & data[22]));
 		input_sync(dev);
 
-	} else if (fourscore_connected(cfg, data)) {
-		// NES Four Score
-
-		// Player 1 and 2
-		for (i = 0; i < 2; i++) {
-			dev = cfg->pad[i];
-			g = cfg->gpio[i + 2];
-
-			for (j = 0; j < 4; j++) {
-				input_report_key(dev, btn_label[j], g & data[btn_index[j]]);
-			}
-			input_report_abs(dev, ABS_X, !(g & data[6]) - !(g & data[7]));
-			input_report_abs(dev, ABS_Y, !(g & data[4]) - !(g & data[5]));
-			input_sync(dev);
-		}
-
-		// Player 3 and 4
-		for (i = 2; i < 4; i++) {
-			dev = cfg->pad[i];
-			g = cfg->gpio[i];
-
-			for (j = 0; j < 4; j++) {
-				input_report_key(dev, btn_label[j], g & data[btn_index[j] + 8]);
-			}
-			input_report_abs(dev, ABS_X, !(g & data[14]) - !(g & data[15]));
-			input_report_abs(dev, ABS_Y, !(g & data[12]) - !(g & data[13]));
-			input_sync(dev);
-		}
-		
-		// Check if virtual device 5 should be cleared and if player_mode should be changed to 4 player mode
-		if (cfg->player_mode > 4) {
-			cfg->player_mode = 4;
-			clear_devices(cfg, 1);
-		} else if (cfg->player_mode < 4) {
-			cfg->player_mode = 4;
-		}
 	} else {
-		// NES or SNES gamepad
-
-		// Player 1 and 2
-		for (i = 0; i < 2; i++) {
-			dev = cfg->pad[i];
-			g = cfg->gpio[i + 2];
-
-			for (j = 0; j < 8; j++) {
-				input_report_key(dev, btn_label[j], g & data[btn_index[j]]);
+		pads_read(cfg, data);
+	
+		if (fourscore_connected(cfg, data)) {
+			// NES Four Score
+	
+			// Player 1 and 2
+			for (i = 0; i < 2; i++) {
+				dev = cfg->pad[i];
+				g = cfg->gpio[i + 2];
+	
+				for (j = 0; j < 4; j++) {
+					input_report_key(dev, btn_label[j], g & data[btn_index[j]]);
+				}
+				input_report_abs(dev, ABS_X, !(g & data[6]) - !(g & data[7]));
+				input_report_abs(dev, ABS_Y, !(g & data[4]) - !(g & data[5]));
+				input_sync(dev);
 			}
-			input_report_abs(dev, ABS_X, !(g & data[6]) - !(g & data[7]));
-			input_report_abs(dev, ABS_Y, !(g & data[4]) - !(g & data[5]));
-			input_sync(dev);
-		}
-
-		// Check if virtual devices 3, 4 and 5 should be cleared and player_mode should be changed to 2 player mode
-		if (cfg->player_mode > 2) {
-			cfg->player_mode = 2;
-			clear_devices(cfg, 3);
+	
+			// Player 3 and 4
+			for (i = 2; i < 4; i++) {
+				dev = cfg->pad[i];
+				g = cfg->gpio[i];
+	
+				for (j = 0; j < 4; j++) {
+					input_report_key(dev, btn_label[j], g & data[btn_index[j] + 8]);
+				}
+				input_report_abs(dev, ABS_X, !(g & data[14]) - !(g & data[15]));
+				input_report_abs(dev, ABS_Y, !(g & data[12]) - !(g & data[13]));
+				input_sync(dev);
+			}
+			
+			// Check if virtual device 5 should be cleared and if player_mode should be changed to 4 player mode
+			if (cfg->player_mode > 4) {
+				cfg->player_mode = 4;
+				clear_devices(cfg, 1);
+			} else if (cfg->player_mode < 4) {
+				cfg->player_mode = 4;
+			}
+		} else {
+			// NES or SNES gamepad
+	
+			// Player 1 and 2
+			for (i = 0; i < 2; i++) {
+				dev = cfg->pad[i];
+				g = cfg->gpio[i + 2];
+	
+				for (j = 0; j < 8; j++) {
+					input_report_key(dev, btn_label[j], g & data[btn_index[j]]);
+				}
+				input_report_abs(dev, ABS_X, !(g & data[6]) - !(g & data[7]));
+				input_report_abs(dev, ABS_Y, !(g & data[4]) - !(g & data[5]));
+				input_sync(dev);
+			}
+	
+			// Check if virtual devices 3, 4 and 5 should be cleared and player_mode should be changed to 2 player mode
+			if (cfg->player_mode > 2) {
+				cfg->player_mode = 2;
+				clear_devices(cfg, 3);
+			}
 		}
 	}
 }
