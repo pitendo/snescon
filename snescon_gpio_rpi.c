@@ -318,11 +318,6 @@ static unsigned char multitap_connected(struct pads_config *cfg) {
 	unsigned char byte = 0;
 	unsigned int clk, latch, d0, d1;
 
-	// If Multitap is not enabled, return 0.
-	if (!(cfg->enable_multitap)) {
-		return 0;
-	}
-
 	// Store GPIOs in variables
 	clk = cfg->gpio[0];
 	latch = cfg->gpio[1];
@@ -384,11 +379,6 @@ static unsigned char multitap_connected(struct pads_config *cfg) {
  * @return 1 if a NES Four Score is connected, otherwise 0
  */
 static unsigned char fourscore_connected(struct pads_config *cfg, unsigned int *data) {
-	// If Four Score is not enabled, return 0.
-	if (!(cfg->enable_fourscore)) {
-		return 0;
-	}
-
 	return !(cfg->gpio[2] & data[16]) &&
 	       !(cfg->gpio[2] & data[17]) &&
 	       !(cfg->gpio[2] & data[18]) &&
@@ -437,7 +427,7 @@ static void pads_update(struct pads_config *cfg) {
 	unsigned char i, j;
 	struct input_dev *dev;
 
-	if (multitap_connected(cfg)) {
+	if (enable_multitap && multitap_connected(cfg)) {
 		// SNES Multitap
 		pads_read_multitap(cfg, data);
 		
@@ -502,7 +492,7 @@ static void pads_update(struct pads_config *cfg) {
 	} else {
 		pads_read(cfg, data);
 	
-		if (fourscore_connected(cfg, data)) {
+		if (enable_fourscore && fourscore_connected(cfg, data)) {
 			// NES Four Score
 	
 			// Player 1 and 2
@@ -681,7 +671,7 @@ static void __exit pads_remove(struct pads_config *cfg) {
   |______|_|_| |_|\__,_/_/\_\  |_|\_\___|_|  |_| |_|\___|_|
 */
 
-#define REFRESH_TIME	HZ/100
+#define REFRESH_TIME HZ/100
 
 MODULE_AUTHOR("Christian Isaksson");
 MODULE_AUTHOR("Karl Thoren <karl.h.thoren@gmail.com>");
