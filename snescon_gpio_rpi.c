@@ -55,9 +55,9 @@ static volatile unsigned *gpio;	// I/O access.
 #define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) // GPIO controller.
 
 /*
- * All GPIOs found on the Raspberry Pi P1 Header.
+ * All vadlid GPIOs found on the Raspberry Pi P1 Header.
  */
-static const unsigned char all_valid_gpio[] = { 0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 17, 18, 21, 22, 23, 24, 25, 27 };
+static const unsigned char all_valid_gpio[] = { 0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 17, 18, 21, 22, 25, 27 };
 
 /**
  * Set GPIO high.
@@ -219,7 +219,7 @@ static unsigned int gpio_get_bit(unsigned char g_id) {
  * gpio: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>
  * pad: <pad 1, pad 2, pad 3, pad 4, pad 5>
  *
- * enable_multitap and enable_fourscore are redable and writable from userspace (sysfs parameter).
+ * multitap_enabled and fourscore_enabled are redable and writable from userspace (sysfs parameter).
  * There are no message to the driver when the variable are written. So they need to be handled as they can change at any time.
  *
  */
@@ -230,8 +230,8 @@ struct pads_config {
 	char *device_name;
 	int (* open) (struct input_dev *dev);
 	void (* close) (struct input_dev *dev);
-	bool enable_multitap;
-	bool enable_fourscore;
+	bool multitap_enabled;
+	bool fourscore_enabled;
 };
 
 // Buttons found on the SNES gamepad
@@ -427,7 +427,7 @@ static void pads_update(struct pads_config *cfg) {
 	unsigned char i, j;
 	struct input_dev *dev;
 
-	if (cfg->enable_multitap && multitap_connected(cfg)) {
+	if (cfg->multitap_enabled && multitap_connected(cfg)) {
 		// SNES Multitap
 		pads_read_multitap(cfg, data);
 		
@@ -492,7 +492,7 @@ static void pads_update(struct pads_config *cfg) {
 	} else {
 		pads_read(cfg, data);
 	
-		if (cfg->enable_fourscore && fourscore_connected(cfg, data)) {
+		if (cfg->fourscore_enabled && fourscore_connected(cfg, data)) {
 			// NES Four Score
 	
 			// Player 1 and 2
@@ -751,8 +751,8 @@ static struct snescon_config snescon_config = {
 	.pads_cfg.device_name = "SNES pad",
 	.pads_cfg.open = &snescon_open,
 	.pads_cfg.close = &snescon_close,
-	.pads_cfg.enable_multitap = 1,
-	.pads_cfg.enable_fourscore = 1,
+	.pads_cfg.multitap_enabled = 1,
+	.pads_cfg.fourscore_enabled = 1,
 };
 
 /**
@@ -762,16 +762,16 @@ module_param_array_named(gpio, snescon_config.gpio_id, uint, &(snescon_config.gp
 MODULE_PARM_DESC(gpio, "Mapping of the 6 gpio for the driver are as follow: <clk, latch, port1_d0 (data1), port2_d0 (data2), port2_d1 (data4), port2_pp (data6)>");
 
 /**
- * @brief Definition of module parameter enable_multitap. This parameter are readable and writable from the sysfs.
+ * @brief Definition of module parameter multitap_enabled. This parameter are readable and writable from the sysfs.
  */
-module_param_named(en_multitap, snescon_config.pads_cfg.enable_multitap, bool, S_IRUGO | S_IWUSR);
-MODULE_PARM_DESC(en_multitap, "Enable/disable multitap. Default is enabled.");
+module_param_named(multitap, snescon_config.pads_cfg.multitap_enabled, bool, S_IRUGO | S_IWUSR);
+MODULE_PARM_DESC(multitap, "Enable/disable multitap. (Enabled by default.)");
 
 /**
- * @brief Definition of module parameter enable_fourscore. This parameter are readable and writable from the sysfs.
+ * @brief Definition of module parameter fourscore_enabled. This parameter are readable and writable from the sysfs.
  */
-module_param_named(en_fourscore, snescon_config.pads_cfg.enable_fourscore, bool, S_IRUGO | S_IWUSR);
-MODULE_PARM_DESC(en_fourscore, "Enable/disable fourscore. Default is enabled.");
+module_param_named(fourscore, snescon_config.pads_cfg.fourscore_enabled, bool, S_IRUGO | S_IWUSR);
+MODULE_PARM_DESC(en_fourscore, "Enable/disable fourscore. (Enabled by default.)");
 
 /**
  * Init function for the driver.
