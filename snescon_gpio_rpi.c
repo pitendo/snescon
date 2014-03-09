@@ -55,7 +55,7 @@ static volatile unsigned *gpio;	// I/O access.
 #define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) // GPIO controller.
 
 /*
- * All vadlid GPIOs found on the Raspberry Pi P1 Header.
+ * All valid GPIOs found on the Raspberry Pi P1 Header.
  */
 static const unsigned char all_valid_gpio[] = { 0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 17, 18, 21, 22, 25, 27 };
 
