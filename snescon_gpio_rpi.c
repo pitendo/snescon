@@ -235,7 +235,7 @@ struct pads_config {
 };
 
 // Buttons found on the SNES gamepad
-static const short btn_label[] = { BTN_B, BTN_Y, BTN_SELECT, BTN_START, BTN_A, BTN_X, BTN_TL, BTN_TR };
+static const long btn_label[] = { BTN_B, BTN_Y, BTN_SELECT, BTN_START, BTN_A, BTN_X, BTN_TL, BTN_TR };
 
 // The order that the buttons of the SNES gamepad are stored in the byte string
 static const unsigned char btn_index[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
@@ -398,16 +398,16 @@ static unsigned char fourscore_connected(struct pads_config *cfg, unsigned int *
 }
 
 /**
- * Clear status of buttons and axises of virtual devices.
+ * Clear status of buttons and axises of pads not in use.
  * 
  * @param cfg The pad configuration
  * @param n_devs Number of devices to have all buttons and axises cleared
  */
-static void clear_devices(struct pads_config *cfg, unsigned char n_devs) {
+static void pads_clear(struct pads_config *cfg, unsigned char n_devs) {
 	struct input_dev *dev;
 	int i, j;
 	for(i = 0; i < n_devs; i++) {
-		dev = cfg->pad[5 - i];
+		dev = cfg->pad[(NUMBER_OF_INPUT_DEVICES - 1) - i];
 		for (j = 0; j < 8; j++) {
 			input_report_key(dev, btn_label[j], 0);
 		}
@@ -524,7 +524,7 @@ static void pads_update(struct pads_config *cfg) {
 			// Check if virtual device 5 should be cleared and if player_mode should be changed to 4 player mode
 			if (cfg->player_mode > 4) {
 				cfg->player_mode = 4;
-				clear_devices(cfg, 1);
+				pads_clear(cfg, 1);
 			} else if (cfg->player_mode < 4) {
 				cfg->player_mode = 4;
 			}
@@ -547,7 +547,7 @@ static void pads_update(struct pads_config *cfg) {
 			// Check if virtual devices 3, 4 and 5 should be cleared and player_mode should be changed to 2 player mode
 			if (cfg->player_mode > 2) {
 				cfg->player_mode = 2;
-				clear_devices(cfg, 3);
+				pads_clear(cfg, 3);
 			}
 		}
 	}
