@@ -2,7 +2,7 @@
 To install the driver follow steps below.
 
 From the home folder, clone into the git repository: <br/>
-> - git clone https://github.com/pitendo/snescon
+> - git clone https://github.com/retrones/snescon
 
 Move the directory to /usr/src/ and rename it snescon_gpio_rpi-1.0.0: <br/>
 > - sudo mv snescon /usr/src/snescon_gpio_rpi-1.0.0
